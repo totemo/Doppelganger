@@ -4,4 +4,3 @@ Doppelganger is a Bukkit plugin that provides an alternative game mechanic for a
 
 You must then kill the summoned mob in order to get the head.
 
-
