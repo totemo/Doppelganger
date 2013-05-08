@@ -277,6 +277,31 @@ creatures:
         level: 2
       - type: damage_all
         level: 5
+
+  Villain:
+    health: 100
+    spawn: ToughWitherSkeleton
+    despawns: false
+    mask: Ooer
+    lightning:
+      min: 4
+      max: 7
+      range: 2.0
+      duration: 30
+    helmet:
+      item: skull_item
+      dropchance: 0.5
+    weapon:
+      dropchance: 0.05
+      item: diamond_sword
+      enchantments:
+      - type: knockback
+        level: 2
+      - type: fire_aspect
+        level: 2
+      - type: damage_all
+        level: 5
+
         
 players:
   Notch:
@@ -286,14 +311,16 @@ players:
     - diamond_t_ew
         
   jeb_:
-    spawn: jeb_
     shapes:
     - diamond_t_ns
     - diamond_t_ew
 
   Dinnerbone:
-    spawn: Dinnerbone
     shapes:
     - diamond_t_ns
     - diamond_t_ew
 
+  Villain:
+    shapes:
+    - diamond_2pillar
+    

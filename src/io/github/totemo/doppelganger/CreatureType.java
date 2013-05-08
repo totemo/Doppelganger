@@ -53,6 +53,7 @@ public class CreatureType
   {
     String spawn = section.getString("spawn", "");
     String mount = section.getString("mount", "");
+    String mask = section.getString("mask", null);
     boolean despawns = section.getBoolean("despawns", true);
     int health = section.getInt("health", 20);
     int air = section.getInt("air", 20 * 60);
@@ -74,7 +75,7 @@ public class CreatureType
     int maxStrikes = section.getInt("lightning.max", minStrikes);
     double strikeRange = section.getDouble("lightning.range", 2.0);
     int strikeDuration = section.getInt("lightning.duration", 30);
-    CreatureType type = new CreatureType(section.getName(), spawn, mount, health, air, despawns,
+    CreatureType type = new CreatureType(section.getName(), spawn, mount, mask, health, air, despawns,
                                          sound, minStrikes, maxStrikes, strikeRange, strikeDuration);
 
     // Load up the potion effects.
@@ -111,6 +112,9 @@ public class CreatureType
    * @param name a unique identifier for this type.
    * @param creatureType the type of creature to spawn.
    * @param mount the type of creature that this creature is riding.
+   * @param mask the name of the player whose head this creature should always
+   *          wear (as a mask), irrespective of the player name it was summoned
+   *          with.
    * @param health the maximum health of the creature in half-hearts.
    * @param air the lung capacity of the creature in ticks.
    * @param despawns true if the creature will despawn when the player is too
@@ -122,13 +126,14 @@ public class CreatureType
    * @param strikeDuration maximum period between spawning and last strike in
    *          ticks.
    */
-  public CreatureType(String name, String creatureType, String mount,
+  public CreatureType(String name, String creatureType, String mount, String mask,
                       int health, int air, boolean despawns, Sound sound,
                       int minStrikes, int maxStrikes, double strikeRange, int strikeDuration)
   {
     _name = name;
     _creatureType = creatureType;
     _mount = mount;
+    _mask = mask;
     _health = health;
     _air = air;
     _despawns = despawns;
@@ -173,6 +178,20 @@ public class CreatureType
   public String getMount()
   {
     return _mount;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return the name of the player whose head this creature should always wear,
+   * irrespective of the player name it was summoned with.
+   * 
+   * @return the name of the player whose head this creature should always wear,
+   *         irrespective of the player name it was summoned with, or null if
+   *         not set.
+   */
+  public String getMask()
+  {
+    return _mask;
   }
 
   // --------------------------------------------------------------------------
@@ -394,6 +413,12 @@ public class CreatureType
    * The type of creature that this creature is riding.
    */
   protected String                  _mount;
+
+  /**
+   * The name of the player whose head this creature should always wear,
+   * irrespective of the player name it was summoned with.
+   */
+  protected String                  _mask;
 
   /**
    * Maximum health in half-hearts.

@@ -179,11 +179,10 @@ public class Doppelganger extends JavaPlugin implements Listener
         ((Creature) doppelganger).setTarget(event.getPlayer());
       }
 
-      // Make the doppelganger wear the player head.
-      doppelganger.getEquipment().setHelmet(getPlayerHead(doppelgangerName));
-
-      // TODO: remove the fixed drop chance. Should be as configured.
-      doppelganger.getEquipment().setHelmetDropChance(1.0f);
+      // Make the doppelganger wear the player head or type-specific mask.
+      String headPlayerName =
+        (type != null && type.getMask() != null) ? type.getMask() : doppelgangerName;
+      doppelganger.getEquipment().setHelmet(getPlayerHead(headPlayerName));
     }
   } // doDoppelganger
 
