@@ -161,7 +161,7 @@ public class CreatureFactory
     // named blocks?
     for (CreatureShape shape : _shapes.values())
     {
-      if (placedItem.getTypeId() == shape.getTriggerMaterialId() && shape.isCreatureShape(world, loc))
+      if (shape.isComplete(world, loc, placedItem.getTypeId()))
       {
         return shape;
       }

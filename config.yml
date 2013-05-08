@@ -2,6 +2,7 @@ allow_arbitrary_names: true
 
 shapes:
   diamond_t_ns:
+    enabled: true
     head: skull_item
     body:
     - material: diamond_block
@@ -209,7 +210,7 @@ creatures:
     weapon:
       item: diamond_sword
       damage: 50
-      dropchance: 1.0
+      dropchance: 0.05
       enchantments:
       - type: damage_all
         level: 5
@@ -245,7 +246,7 @@ creatures:
       dropchance: 1.0
     weapon:
       item: diamond_sword
-      dropchance: 1.0
+      dropchance: 0.05
     escorts:
     - spawn: FlyingPig
       min: 6
@@ -267,7 +268,7 @@ creatures:
       item: skull_item
       dropchance: 1.0
     weapon:
-      dropchance: 1.0
+      dropchance: 0.05
       item: diamond_sword
       enchantments:
       - type: knockback

@@ -50,60 +50,72 @@ public class CreatureShape
    */
   public static CreatureShape loadFromSection(ConfigurationSection section, Logger logger)
   {
+    CreatureShape shape = null;
     try
     {
       Material headMaterial = Material.matchMaterial(section.getString("head", ""));
-      CreatureShape shape = new CreatureShape(section.getName(), headMaterial);
-
-      if (section.isList("body"))
+      if (headMaterial == null)
       {
-        try
-        {
-          List<Map<?, ?>> blocks = section.getMapList("body");
-          for (int i = 0; i < blocks.size(); ++i)
-          {
-            ConfigMap map = new ConfigMap(blocks.get(i), logger, shape.getName() + " block " + i);
-            String materialName = map.getString("material", "");
-            Material mat = Material.matchMaterial(materialName);
-            List<Number> offset = map.getNumberList("offset", null);
-            if (mat != null && offset != null && offset.size() == 3)
-            {
-              Vector vector = new Vector(offset.get(0).intValue(),
-                                         offset.get(1).intValue(),
-                                         offset.get(2).intValue());
-              shape.addCreatureBlock(mat, vector);
-            }
-            else
-            {
-              logger.warning("block index " + i + " is incorrectly specified");
-              return null;
-            }
-          } // for each block in the body
-        }
-        catch (Exception ex)
-        {
-          logger.warning(ex.getClass().getName() + " loading body in " + section.getCurrentPath());
-        }
-      } // body
-
-      if (section.isList("summon"))
+        logger.warning("Shape " + section.getName() + "'s head material is invalid.");
+      }
+      else
       {
-        try
+        boolean enabled = section.getBoolean("enabled", true);
+        if (!enabled)
         {
-          List<Map<?, ?>> summons = section.getMapList("summon");
-          for (int i = 0; i < summons.size(); ++i)
+          logger.warning("Summoning doppelgangers by building shape " + section.getName() + " is disabled.");
+        }
+        shape = new CreatureShape(section.getName(), headMaterial, enabled);
+        if (section.isList("body"))
+        {
+          try
           {
-            ConfigMap map = new ConfigMap(summons.get(i), logger, shape.getName() + " summon " + i);
-            double weight = map.getDouble("weight", 1.0);
-            String spawn = map.getString("spawn", "");
-            shape.addCreatureType(spawn, weight);
+            List<Map<?, ?>> blocks = section.getMapList("body");
+            for (int i = 0; i < blocks.size(); ++i)
+            {
+              ConfigMap map = new ConfigMap(blocks.get(i), logger, shape.getName() + " block " + i);
+              String materialName = map.getString("material", "");
+              Material mat = Material.matchMaterial(materialName);
+              List<Number> offset = map.getNumberList("offset", null);
+              if (mat != null && offset != null && offset.size() == 3)
+              {
+                Vector vector = new Vector(offset.get(0).intValue(),
+                                             offset.get(1).intValue(),
+                                             offset.get(2).intValue());
+                shape.addCreatureBlock(mat, vector);
+              }
+              else
+              {
+                logger.warning("block index " + i + " is incorrectly specified");
+                return null;
+              }
+            } // for each block in the body
           }
-        }
-        catch (Exception ex)
+          catch (Exception ex)
+          {
+            logger.warning(ex.getClass().getName() + " loading body in " + section.getCurrentPath());
+          }
+        } // body
+
+        if (section.isList("summon"))
         {
-          logger.warning(ex.getClass().getName() + " loading summon in " + section.getCurrentPath());
-        }
-      } // summon
+          try
+          {
+            List<Map<?, ?>> summons = section.getMapList("summon");
+            for (int i = 0; i < summons.size(); ++i)
+            {
+              ConfigMap map = new ConfigMap(summons.get(i), logger, shape.getName() + " summon " + i);
+              double weight = map.getDouble("weight", 1.0);
+              String spawn = map.getString("spawn", "");
+              shape.addCreatureType(spawn, weight);
+            }
+          }
+          catch (Exception ex)
+          {
+            logger.warning(ex.getClass().getName() + " loading summon in " + section.getCurrentPath());
+          }
+        } // summon
+      } // head material is valid.
       return shape;
     }
     catch (Exception ex)
@@ -120,11 +132,14 @@ public class CreatureShape
    * @param name the name of this shape in the configuration.
    * @param triggerMaterial the Material of the final placed block that triggers
    *          creature spawning.
+   * @param enabled if true, building this shape will summon a doppelganger; if
+   *          false, the creature can only be summoned by command.
    */
-  public CreatureShape(String name, Material triggerMaterial)
+  public CreatureShape(String name, Material triggerMaterial, boolean enabled)
   {
     _name = name;
     _triggerMaterialId = triggerMaterial.getId();
+    _enabled = enabled;
   }
 
   // --------------------------------------------------------------------------
@@ -147,6 +162,17 @@ public class CreatureShape
   public int getTriggerMaterialId()
   {
     return _triggerMaterialId;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return true if building this shape will summon a doppelganger.
+   * 
+   * @return true if building this shape will summon a doppelganger.
+   */
+  public boolean isEnabled()
+  {
+    return _enabled;
   }
 
   // --------------------------------------------------------------------------
@@ -198,6 +224,22 @@ public class CreatureShape
 
   // --------------------------------------------------------------------------
   /**
+   * Return true if this shape is enabled and placing an item of the specified
+   * type at the specified Location would result in this creature shape.
+   * 
+   * @param world the World.
+   * @param loc the location where the trigger block would be placed.
+   * @param placedItemId the ID of the placed block.
+   * @return true if placing the specified block at the specified location would
+   *         result in a complete creature shape.
+   */
+  public boolean isComplete(World world, Location loc, int placedItemId)
+  {
+    return isEnabled() && _triggerMaterialId == placedItemId && isCreatureShape(world, loc);
+  }
+
+  // --------------------------------------------------------------------------
+  /**
    * Return true if placing the trigger block at the specified Location would
    * result in a complete creature shape.
    * 
@@ -216,7 +258,7 @@ public class CreatureShape
       }
     }
     return true;
-  } // isCreatureShape
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -295,6 +337,11 @@ public class CreatureShape
    * creature shape.
    */
   protected int                       _triggerMaterialId;
+
+  /**
+   * True if building this shape will summon a doppelganger.
+   */
+  protected boolean                   _enabled;
 
   /**
    * The relative Y offset of the lowest block(s) in the shape.

@@ -69,8 +69,7 @@ public class Doppelganger extends JavaPlugin implements Listener
           CreatureShape shape = null;
           for (CreatureShape tryShape : shapes)
           {
-            if (placedItem.getTypeId() == tryShape.getTriggerMaterialId() &&
-                tryShape.isCreatureShape(world, loc))
+            if (tryShape.isComplete(world, loc, placedItem.getTypeId()))
             {
               shape = tryShape;
               break;
