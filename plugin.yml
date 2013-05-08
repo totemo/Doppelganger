@@ -1,0 +1,9 @@
+name: Doppelganger
+main: io.github.totemo.doppelganger.Doppelganger
+version: ${project.version}
+description: ${project.description}
+author: totemo
+website: http://github.com/totemo/Doppelganger
+commands:
+permissions:
+

@@ -1,0 +1,298 @@
+allow_arbitrary_names: true
+
+shapes:
+  diamond_t_ns:
+    head: skull_item
+    body:
+    - material: diamond_block
+      offset: [0, -1, -1]
+    - material: diamond_block
+      offset: [0, -1, 1]
+    - material: diamond_block
+      offset: [0, -1, 0]
+    - material: diamond_block
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: ToughWitherSkeleton
+
+  diamond_t_ew:
+    head: skull_item
+    body:
+    - material: diamond_block
+      offset: [-1, -1, 0]
+    - material: diamond_block
+      offset: [1, -1, 0]
+    - material: diamond_block
+      offset: [0, -1, 0]
+    - material: diamond_block
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: ToughWitherSkeleton
+
+  diamond_2pillar:
+    head: pumpkin
+    body:
+    - material: diamond_block
+      offset: [0, -1, 0]
+    - material: diamond_block
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: ToughWitherSkeleton
+
+  gold_diamond_2pillar:
+    head: pumpkin
+    body:
+    - material: gold_block
+      offset: [0, -1, 0]
+    - material: diamond_block
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: ToughPigZombie
+
+  pumpkin:
+    head: pumpkin
+    summon:
+    - weight: 1.0
+      spawn: SpecialBat
+    - weight: 1.0
+      spawn: FlyingPig
+    - weight: 1.0
+      spawn: FlyingSquid
+
+creatures:
+  SpecialBat:
+    spawn: Bat
+    sound: ambience_cave
+
+  ToughWitherSkeleton:
+    spawn: WitherSkeleton
+    sound: wither_spawn
+    lightning:
+      min: 1
+    despawns: false
+    health: 100
+    air: 72000
+    potions:
+    - type: fire_resistance
+    - type: damage_resistance
+    - type: speed
+    - type: regeneration
+    - type: increase_damage
+      amplifier: 2
+    chestplate:
+      item: diamond_chestplate
+      damage: 3
+      dropchance: 0.0
+    leggings:
+      item: diamond_leggings
+      damage: 3
+      dropchance: 0.0
+    weapon:
+      item: diamond_sword
+
+  ToughSkeleton:
+    spawn: Skeleton
+    sound: wither_spawn
+    lightning:
+      min: 1
+    despawns: false
+    health: 100
+    air: 72000
+    potions:
+    - type: fire_resistance
+    - type: damage_resistance
+    - type: speed
+    - type: regeneration
+    - type: increase_damage
+      amplifier: 2
+    chestplate:
+      item: diamond_chestplate
+      damage: 3
+      dropchance: 0.0
+
+  ToughPigZombie:
+    spawn: PigZombie
+    sound: wither_spawn
+    lightning:
+      min: 1
+    despawns: false
+    health: 100
+    air: 72000
+    potions:
+    - type: fire_resistance
+    - type: damage_resistance
+    - type: speed
+    - type: regeneration
+    - type: increase_damage
+      amplifier: 2
+    helmet:
+      item: skull_item
+      dropchance: 1.0
+    weapon:
+      item: diamond_sword
+
+  InvisibleBat:
+    spawn: Bat
+    sound: wither_spawn
+    potions:
+    - type: invisibility
+
+  FlyingPig:
+    spawn: Pig
+    mount: InvisibleBat
+    sound: pig_death
+
+  FlyingSquid:
+    spawn: Squid
+    mount: InvisibleBat
+    sound: swim
+    air: 72000
+        
+  FlyingSaddledPig:
+    spawn: SaddledPig
+    mount: InvisibleBat
+
+  InvisibleBlaze:
+    spawn: Blaze
+    potions:
+    - type: invisibility
+    
+  FlyingSkull:
+    spawn: Skeleton
+    despawns: false
+    health: 40
+    mount: InvisibleBlaze
+    potions:
+    - type: invisibility
+    - type: fire_resistance
+    helmet: 
+      item: skull_item
+      dropchance: 0.0
+    weapon:
+      item: bow
+      enchantments:
+      - type: arrow_damage
+        level: 5
+      - type: arrow_fire
+        level: 1
+
+  Notch:
+    health: 80
+    air: 72000
+    spawn: ToughWitherSkeleton
+    despawns: false
+    lightning:
+      min: 4
+      max: 7
+    sound: wither_spawn
+    helmet:
+      item: skull_item
+      dropchance: 1.0
+    chestplate:
+      item: diamond_chestplate
+      damage: 3
+      dropchance: 0.01
+      enchantments:
+      - type: protection_environmental
+        level: 4
+    leggings: 
+      item: diamond_leggings
+      damage: 3
+      dropchance: 0.0
+      enchantments:
+      - type: protection_environmental
+        level: 4
+    weapon:
+      item: diamond_sword
+      damage: 50
+      dropchance: 1.0
+      enchantments:
+      - type: damage_all
+        level: 5
+      - type: fire_aspect
+        level: 2
+    escorts:
+    - spawn: WitherSkeleton
+      weight: 1.0
+      health: 30
+      min: 3
+      max: 8
+      range: 5.0
+      duration: 40
+      lightning: 0.75
+      weapon:
+        item: diamond_sword
+      helmet:
+        item: diamond_helmet
+
+  jeb_:
+    health: 60
+    air: 72000
+    spawn: ToughSkeleton
+    despawns: false
+    mount: FlyingSaddledPig
+    lightning:
+      min: 4
+      max: 7
+      range: 2.0
+      duration: 30
+    helmet:
+      item: skull_item
+      dropchance: 1.0
+    weapon:
+      item: diamond_sword
+      dropchance: 1.0
+    escorts:
+    - spawn: FlyingPig
+      min: 6
+      max: 12
+      range: 7.0
+      duration: 40
+      lightning: 1.0
+
+  Dinnerbone:
+    health: 80
+    spawn: ToughSkeleton
+    despawns: false
+    lightning:
+      min: 4
+      max: 7
+      range: 2.0
+      duration: 30
+    helmet:
+      item: skull_item
+      dropchance: 1.0
+    weapon:
+      dropchance: 1.0
+      item: diamond_sword
+      enchantments:
+      - type: knockback
+        level: 2
+      - type: fire_aspect
+        level: 2
+      - type: damage_all
+        level: 5
+        
+players:
+  Notch:
+    spawn: Notch
+    shapes:
+    - diamond_t_ns
+    - diamond_t_ew
+        
+  jeb_:
+    spawn: jeb_
+    shapes:
+    - diamond_t_ns
+    - diamond_t_ew
+
+  Dinnerbone:
+    spawn: Dinnerbone
+    shapes:
+    - diamond_t_ns
+    - diamond_t_ew
+
