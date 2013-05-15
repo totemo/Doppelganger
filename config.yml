@@ -136,11 +136,20 @@ creatures:
     weapon:
       item: diamond_sword
 
+  MolonMan:
+    spawn: WitherSkeleton
+    sound: ambience_cave
+    helmet:
+      item: melon_block
+    chestplate: 
+      item: melon_block
+
   InvisibleBat:
     spawn: Bat
     sound: wither_spawn
     potions:
     - type: invisibility
+      ambient: false
 
   FlyingPig:
     spawn: Pig
@@ -161,6 +170,7 @@ creatures:
     spawn: Blaze
     potions:
     - type: invisibility
+      ambient: false
     
   FlyingSkull:
     spawn: Skeleton

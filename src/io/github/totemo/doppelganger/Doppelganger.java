@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -17,6 +18,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.amoebaman.kitmaster.utilities.CommandController;
 
 // ----------------------------------------------------------------------------
 /**
@@ -34,6 +37,7 @@ public class Doppelganger extends JavaPlugin implements Listener
     _configuration.load();
 
     getServer().getPluginManager().registerEvents(this, this);
+    CommandController.registerCommands(this, _commands);
   }
 
   // --------------------------------------------------------------------------
@@ -54,7 +58,7 @@ public class Doppelganger extends JavaPlugin implements Listener
       Matcher nameMatcher = _namePattern.matcher(doppelgangerName);
       if (!_configuration.isArbitraryNameAllowed() && !nameMatcher.matches())
       {
-        event.getPlayer().sendMessage("\"" + doppelgangerName + "\" is not a valid player name.");
+        event.getPlayer().sendMessage(ChatColor.RED + "\"" + doppelgangerName + "\" is not a valid player name.");
       }
       else
       {
@@ -69,7 +73,7 @@ public class Doppelganger extends JavaPlugin implements Listener
           CreatureShape shape = null;
           for (CreatureShape tryShape : shapes)
           {
-            if (tryShape.isComplete(world, loc, placedItem.getTypeId()))
+            if (tryShape.isComplete(loc, placedItem.getTypeId()))
             {
               shape = tryShape;
               break;
@@ -78,7 +82,7 @@ public class Doppelganger extends JavaPlugin implements Listener
 
           if (shape == null)
           {
-            event.getPlayer().sendMessage("That's not how you summon " + doppelgangerName + ".");
+            event.getPlayer().sendMessage(ChatColor.YELLOW + "That's not how you summon " + doppelgangerName + ".");
           }
           else
           {
@@ -113,8 +117,53 @@ public class Doppelganger extends JavaPlugin implements Listener
 
   // --------------------------------------------------------------------------
   /**
+   * Return the {@link CreatureFactory}.
+   * 
+   * @return the {@link CreatureFactory}.
+   */
+  public CreatureFactory getCreatureFactory()
+  {
+    return _creatureFactory;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Spawn a doppelganger of the specified type and name.
+   * 
+   * @param creatureType the type of creature to spawn.
+   * @param name the name to show on the name tag. This is also the name of the
+   *          player whose head will be worn, unless the creature type includes
+   *          a specific mask override. If the name is null or the empty string,
+   *          no name tag will be set and no player head will be worn.
+   * @param loc the Location on the ground where the creature will spawn.
+   * @return the spawned LivingEntity, or null if it could not be spawned.
+   */
+  public LivingEntity spawnDoppelganger(String creatureType, String name, Location loc)
+  {
+    // If a custom creature, do configured special effects.
+    CreatureType type = _creatureFactory.getCreatureType(creatureType);
+    if (type != null)
+    {
+      type.doSpawnEffects(this, loc);
+    }
+
+    LivingEntity doppelganger = _creatureFactory.spawnCreature(creatureType, loc, name);
+    if (doppelganger != null)
+    {
+      // Make the doppelganger wear the player head or type-specific mask.
+      String playerNameOfHead = (type != null && type.getMask() != null) ? type.getMask() : name;
+      if (playerNameOfHead != null && playerNameOfHead.length() != 0)
+      {
+        doppelganger.getEquipment().setHelmet(getPlayerHead(playerNameOfHead));
+      }
+    }
+    return doppelganger;
+  } // spawnDoppelganger
+
+  // --------------------------------------------------------------------------
+  /**
    * Cancel the original block placement, vaporise the golem blocks and spawn a
-   * named Creature of the specified type.
+   * named LivingEntity of the specified type.
    * 
    * @param doppelgangerName the name of spawned creature.
    * @param creatureType the name of the type of creature to spawn.
@@ -123,7 +172,6 @@ public class Doppelganger extends JavaPlugin implements Listener
    */
   protected void doDoppelganger(String doppelgangerName, String creatureType, CreatureShape shape, BlockPlaceEvent event)
   {
-    World world = event.getPlayer().getWorld();
     Location loc = event.getBlock().getLocation();
     ItemStack placedItem = event.getItemInHand();
 
@@ -131,7 +179,7 @@ public class Doppelganger extends JavaPlugin implements Listener
       String.format(Locale.US,
         "Player %s spawned a %s named %s at (%g,%g,%g) in %s by building a %s.",
         event.getPlayer().getName(), creatureType, doppelgangerName,
-        loc.getX(), loc.getY(), loc.getZ(), world.getName(), shape.getName()));
+        loc.getX(), loc.getY(), loc.getZ(), loc.getWorld().getName(), shape.getName()));
 
     // Cancel placement of the trigger.
     event.setCancelled(true);
@@ -148,22 +196,15 @@ public class Doppelganger extends JavaPlugin implements Listener
     }
 
     // Vaporise the shape blocks.
-    shape.vaporise(world, loc);
+    shape.vaporise(loc);
 
     // Add 0.5 to X and Z so the creature is not on the block boundary.
     Location groundLocation = loc.clone();
     groundLocation.add(0.5, shape.getGroundOffset(), 0.5);
-
-    // If a custom creature, do configured special effects.
-    CreatureType type = _creatureFactory.getCreatureType(creatureType);
-    if (type != null)
-    {
-      type.doSpawnEffects(this, world, groundLocation);
-    }
-
     // TODO: allow a customisable offset above the computed ground position.
     // The doppelganger mob.
-    LivingEntity doppelganger = _creatureFactory.spawnNamedCreature(creatureType, world, groundLocation, doppelgangerName);
+
+    LivingEntity doppelganger = spawnDoppelganger(creatureType, doppelgangerName, groundLocation);
     if (doppelganger == null)
     {
       // If the creature type is invalid, it is a configuration error. The shape
@@ -171,18 +212,10 @@ public class Doppelganger extends JavaPlugin implements Listener
       // called prior to entering doDoppelganger(), this shouldn't happen.
       getLogger().severe("Could not spawn " + creatureType);
     }
-    else
+    else if (doppelganger instanceof Creature)
     {
       // If we can, make the doppelganger the players *problem*.
-      if (doppelganger instanceof Creature)
-      {
-        ((Creature) doppelganger).setTarget(event.getPlayer());
-      }
-
-      // Make the doppelganger wear the player head or type-specific mask.
-      String headPlayerName =
-        (type != null && type.getMask() != null) ? type.getMask() : doppelgangerName;
-      doppelganger.getEquipment().setHelmet(getPlayerHead(headPlayerName));
+      ((Creature) doppelganger).setTarget(event.getPlayer());
     }
   } // doDoppelganger
 
@@ -218,4 +251,9 @@ public class Doppelganger extends JavaPlugin implements Listener
    * Configuration management.
    */
   protected Configuration   _configuration   = new Configuration(this, _creatureFactory);
+
+  /**
+   * Handles the command line.
+   */
+  protected Commands        _commands        = new Commands(this);
 } // class Doppelganger

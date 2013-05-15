@@ -6,8 +6,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -47,9 +49,16 @@ public class CreatureFactory
     _shapes.clear();
     for (String shapeName : shapesSection.getKeys(false))
     {
-      CreatureShape shape = CreatureShape.loadFromSection(shapesSection.getConfigurationSection(shapeName), logger);
-      _shapes.put(shapeName, shape);
-      // shape.dump(_plugin.getLogger());
+      if (getCreatureShape(shapeName) != null)
+      {
+        logger.warning("A shape called " + shapeName + " already exists and can't be redefined.");
+      }
+      else
+      {
+        CreatureShape shape = CreatureShape.loadFromSection(shapesSection.getConfigurationSection(shapeName), logger);
+        _shapes.put(shapeName.toLowerCase(), shape);
+        // shape.dump(_plugin.getLogger());
+      }
     }
 
     ConfigurationSection creaturesSection = root.getConfigurationSection("creatures");
@@ -71,7 +80,7 @@ public class CreatureFactory
         }
         else if (isValidCreatureType(type.getCreatureType()))
         {
-          _types.put(creatureName, type);
+          _types.put(creatureName.toLowerCase(), type);
         }
         else
         {
@@ -86,59 +95,110 @@ public class CreatureFactory
     _playerShapes.clear();
     for (String playerName : playersSection.getKeys(false))
     {
-      ConfigurationSection player = playersSection.getConfigurationSection(playerName);
-
-      // If a specific creature type to spawn is not specified, it defaults to
-      // a type with the same name as the player (if that exists).
-      String spawn = player.getString("spawn", playerName);
-      if (!isValidCreatureType(spawn))
+      if (getPlayerCreature(playerName) != null)
       {
-        logger.warning("Can't define player " + playerName +
-                       " because there is no createure type named " + spawn);
+        logger.warning("A player creature called " + playerName + " already exists and can't be redefined.");
       }
       else
       {
-        List<String> shapeNameList = player.getStringList("shapes");
-        ArrayList<CreatureShape> shapes = new ArrayList<CreatureShape>();
-        if (shapeNameList != null)
+        ConfigurationSection player = playersSection.getConfigurationSection(playerName);
+
+        // If a specific creature type to spawn is not specified, it defaults to
+        // a type with the same name as the player (if that exists).
+        String spawn = player.getString("spawn", playerName);
+        if (!isValidCreatureType(spawn))
         {
-          for (String shapeName : shapeNameList)
+          logger.warning("Can't define player " + playerName +
+                         " because there is no creature type named " + spawn);
+        }
+        else
+        {
+          List<String> shapeNameList = player.getStringList("shapes");
+          ArrayList<CreatureShape> shapes = new ArrayList<CreatureShape>();
+          if (shapeNameList != null)
           {
-            CreatureShape shape = getCreatureShape(shapeName);
-            if (shape == null)
+            for (String shapeName : shapeNameList)
+            {
+              CreatureShape shape = getCreatureShape(shapeName);
+              if (shape == null)
+              {
+                logger.warning("Player " + playerName +
+                               " references undefined shape " + shapeName);
+              }
+              else
+              {
+                shapes.add(shape);
+              }
+            } // for
+
+            if (shapes.size() == 0)
             {
               logger.warning("Player " + playerName +
-                             " references undefined shape " + shapeName);
+                             " can only be spawned by command because no shapes have been listed.");
             }
-            else
-            {
-              shapes.add(shape);
-            }
-          } // for
-
-          if (shapes.size() == 0)
-          {
-            logger.warning("Player " + playerName +
-                           " can only be spawned by command because no shapes have been listed.");
+            _playerShapes.put(playerName, shapes);
+            _playerCreatures.put(playerName, spawn);
           }
-          _playerShapes.put(playerName, shapes);
-          _playerCreatures.put(playerName, spawn);
         }
-      }
+      } // if defining
     } // for
   } // load
+
+  // --------------------------------------------------------------------------
+  /**
+   * Print a human-readable list of the configured shapes, creature types and
+   * player-name-specific creatures to the command sender.
+   * 
+   * @param sender the agent requesting the listing.
+   */
+  public void listConfiguration(CommandSender sender)
+  {
+    StringBuilder message = new StringBuilder();
+    message.append(ChatColor.YELLOW);
+    message.append("Shapes:");
+    message.append(ChatColor.YELLOW);
+    for (CreatureShape shape : _shapes.values())
+    {
+      message.append(' ');
+      message.append(shape.getName());
+    }
+    sender.sendMessage(message.toString());
+
+    message.setLength(0);
+    message.append(ChatColor.YELLOW);
+    message.append("Creatures:");
+    message.append(ChatColor.YELLOW);
+    for (CreatureType creature : _types.values())
+    {
+      message.append(' ');
+      message.append(creature.getName());
+    }
+    sender.sendMessage(message.toString());
+
+    message.setLength(0);
+    message.append(ChatColor.YELLOW);
+    message.append("Players:");
+    message.append(ChatColor.YELLOW);
+    for (String player : _playerCreatures.keySet())
+    {
+      message.append(' ');
+      message.append(player);
+    }
+    sender.sendMessage(message.toString());
+  } // listConfiguration
 
   // --------------------------------------------------------------------------
   /**
    * Return the {@link CreatureShape} with the specified name in the
    * configuration, or null if not found.
    * 
+   * @param name the case insensitive shape name.
    * @return the {@link CreatureShape} with the specified name in the
    *         configuration, or null if not found.
    */
   public CreatureShape getCreatureShape(String name)
   {
-    return _shapes.get(name);
+    return _shapes.get(name.toLowerCase());
   }
 
   // --------------------------------------------------------------------------
@@ -161,7 +221,7 @@ public class CreatureFactory
     // named blocks?
     for (CreatureShape shape : _shapes.values())
     {
-      if (shape.isComplete(world, loc, placedItem.getTypeId()))
+      if (shape.isComplete(loc, placedItem.getTypeId()))
       {
         return shape;
       }
@@ -179,12 +239,13 @@ public class CreatureFactory
    * Pig) will not have a corresponding CreatureType instance. The purpose of
    * the CreatureType instance is to apply overrides to the defaults.
    * 
+   * @param name the case-insensitive creature type name.
    * @return the CreatureType identified by the specified name, or null if not
    *         found.
    */
   public CreatureType getCreatureType(String name)
   {
-    return _types.get(name);
+    return _types.get(name.toLowerCase());
   }
 
   // --------------------------------------------------------------------------
@@ -192,6 +253,8 @@ public class CreatureFactory
    * Return the specific creature type that will be spawned when the named
    * player is summoned.
    * 
+   * @param playerName the name of the player whose custom creature type name
+   *          will be returned.
    * @return the specific creature type that will be spawned when the named
    *         player is summoned; guaranteed non-null.
    */
@@ -204,6 +267,8 @@ public class CreatureFactory
   /**
    * Return the specific shapes that can summon the specified player.
    * 
+   * @param playerName the name of the player for whom summoning shapes will be
+   *          returned.
    * @return the specific shapes that can summon the specified player; or null
    *         if not set.
    */
@@ -214,15 +279,34 @@ public class CreatureFactory
 
   // --------------------------------------------------------------------------
   /**
+   * Return true if the specified name signifies a vanilla Minecraft creature
+   * (as in known to EntityType) or the custom values WITHER_SKELETON and
+   * SADDLED_PIG signifying living entities that are part of the vanilla game.
+   * 
+   * @param name the creature type name.
+   * @return true if the creature type is "vanilla", as opposed to defined in
+   *         the Doppelganger configuration file.
+   */
+
+  public boolean isVanillaCreatureType(String name)
+  {
+    return name.equalsIgnoreCase(WITHER_SKELETON) ||
+           name.equalsIgnoreCase(SADDLED_PIG) ||
+           EntityType.fromName(name) != null;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
    * Return true if the specified creature is a valid EntityType value or a
    * supported custom creature name.
    * 
+   * @param creatureType the case-insensitive custom or vanilla creature type.
    * @return true if the specified living entity is a valid EntityType value or
    *         a supported custom creature name.
    */
   public boolean isValidCreatureType(String creatureType)
   {
-    if (_types.get(creatureType) != null ||
+    if (getCreatureType(creatureType) != null ||
         creatureType.equalsIgnoreCase(WITHER_SKELETON) ||
         creatureType.equalsIgnoreCase(SADDLED_PIG))
     {
@@ -237,31 +321,6 @@ public class CreatureFactory
 
   // --------------------------------------------------------------------------
   /**
-   * Create a creature of the specified type, with the specified name.
-   * 
-   * @param creatureType the EntityType.getName() value specifying the creature
-   *          type; case-insensitive, or a supported custom name.
-   * @param world the World.
-   * @param loc the spawn location (block above ground level).
-   * @param name the custom name to assign and display.
-   * @return the spawned LivingEntity, or null if nothing was spawned.
-   */
-  protected LivingEntity spawnNamedCreature(String creatureType, World world, Location loc, String name)
-  {
-    LivingEntity creature = spawnCreature(creatureType, world, loc);
-    if (creature != null)
-    {
-      // TODO: Allow custom prefix and/or suffix.
-      // TODO: Possibly allow prefix/suffix to indicate original creator, e.g.
-      // "totemo's pet Notch"
-      creature.setCustomName(name);
-      creature.setCustomNameVisible(true);
-    }
-    return creature;
-  }
-
-  // --------------------------------------------------------------------------
-  /**
    * Spawn a living entity of the specified type.
    * 
    * This method originally returned a Creature, but Bats are Ambient mobs. The
@@ -270,11 +329,12 @@ public class CreatureFactory
    * @param creatureType the EntityType.getName() value specifying the creature
    *          type; case-insensitive, or "WitherSkeleton". Null or the empty
    *          string will result in no spawned creature.
-   * @param world the World.
    * @param loc the spawn location (block above ground level).
+   * @param name the custom name to assign and display; not set or shown if null
+   *          of the empty string.
    * @return the spawned LivingEntity, or null if nothing was spawned.
    */
-  protected LivingEntity spawnCreature(String creatureType, World world, Location loc)
+  protected LivingEntity spawnCreature(String creatureType, Location loc, String name)
   {
     // Spawn the entity.
     LivingEntity livingEntity = null;
@@ -284,15 +344,24 @@ public class CreatureFactory
     {
       // The creature is recursively defined in terms of spawning another
       // creature and customising that.
-      livingEntity = spawnCreature(type.getCreatureType(), world, loc);
+      livingEntity = spawnCreature(type.getCreatureType(), loc, null);
       if (livingEntity != null)
       {
         type.customise(livingEntity);
 
+        if (name != null && name.length() != 0)
+        {
+          // TODO: Allow custom prefix and/or suffix.
+          // TODO: Possibly allow prefix/suffix to indicate creator/owner of
+          // creature.
+          livingEntity.setCustomName(name);
+          livingEntity.setCustomNameVisible(true);
+        }
+
         // Spawn the mount if possible.
         if (isValidCreatureType(type.getMount()))
         {
-          LivingEntity mount = spawnCreature(type.getMount(), world, loc);
+          LivingEntity mount = spawnCreature(type.getMount(), loc, null);
           mount.setPassenger(livingEntity);
         }
       }
@@ -305,13 +374,13 @@ public class CreatureFactory
       {
         if (creatureType.equalsIgnoreCase(WITHER_SKELETON))
         {
-          Skeleton skeleton = world.spawn(loc, Skeleton.class);
+          Skeleton skeleton = loc.getWorld().spawn(loc, Skeleton.class);
           skeleton.setSkeletonType(SkeletonType.WITHER);
           livingEntity = skeleton;
         }
         else if (creatureType.equalsIgnoreCase(SADDLED_PIG))
         {
-          Pig pig = world.spawn(loc, Pig.class);
+          Pig pig = loc.getWorld().spawn(loc, Pig.class);
           pig.setSaddle(true);
           livingEntity = pig;
         }
@@ -320,7 +389,7 @@ public class CreatureFactory
           EntityType entityType = EntityType.fromName(creatureType);
           if (entityType != null && entityType != EntityType.UNKNOWN)
           {
-            Entity entity = world.spawnEntity(loc, entityType);
+            Entity entity = loc.getWorld().spawnEntity(loc, entityType);
             if (entity instanceof LivingEntity)
             {
               livingEntity = (LivingEntity) entity;
@@ -334,7 +403,7 @@ public class CreatureFactory
 
   // --------------------------------------------------------------------------
   /**
-   * List of {@link CreatureShape} instances.
+   * Map from lower case shape name to {@link CreatureShape} instance.
    * 
    * Use a LinkedHashMap to preserve the ordering defined in the configuration
    * file. That way earlier entries have precedence over later ones.
@@ -342,7 +411,7 @@ public class CreatureFactory
   protected LinkedHashMap<String, CreatureShape>      _shapes          = new LinkedHashMap<String, CreatureShape>();
 
   /**
-   * Map from creature type name to {@link CreatureType} instance.
+   * Map from lower case creature type name to {@link CreatureType} instance.
    */
   protected HashMap<String, CreatureType>             _types           = new HashMap<String, CreatureType>();
 

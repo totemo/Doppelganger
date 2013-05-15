@@ -3,13 +3,15 @@ package io.github.totemo.doppelganger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
@@ -55,8 +57,8 @@ public class CreatureType
     String mount = section.getString("mount", "");
     String mask = section.getString("mask", null);
     boolean despawns = section.getBoolean("despawns", true);
-    int health = section.getInt("health", 20);
-    int air = section.getInt("air", 20 * 60);
+    int health = Math.max(1, section.getInt("health", 20));
+    int air = Math.max(1, section.getInt("air", 20 * 60));
     String soundName = section.getString("sound", "").toUpperCase();
     Sound sound = null;
     try
@@ -71,10 +73,10 @@ public class CreatureType
       logger.warning("Creature " + section.getName() + " has invalid sound " + soundName);
     }
 
-    int minStrikes = section.getInt("lightning.min", 0);
-    int maxStrikes = section.getInt("lightning.max", minStrikes);
-    double strikeRange = section.getDouble("lightning.range", 2.0);
-    int strikeDuration = section.getInt("lightning.duration", 30);
+    int minStrikes = Math.max(0, section.getInt("lightning.min", 0));
+    int maxStrikes = Math.max(minStrikes, section.getInt("lightning.max", minStrikes));
+    double strikeRange = Math.max(0.0, section.getDouble("lightning.range", 2.0));
+    int strikeDuration = Math.max(0, section.getInt("lightning.duration", 30));
     CreatureType type = new CreatureType(section.getName(), spawn, mount, mask, health, air, despawns,
                                          sound, minStrikes, maxStrikes, strikeRange, strikeDuration);
 
@@ -199,24 +201,23 @@ public class CreatureType
    * Do sound and damage-free lighting strike effects.
    * 
    * @param plugin the originating Plugin.
-   * @param world the World.
    * @param loc the Location where the creature will spawn.
    */
-  public void doSpawnEffects(Plugin plugin, World world, Location loc)
+  public void doSpawnEffects(Plugin plugin, Location loc)
   {
     if (_sound != null)
     {
-      world.playSound(loc, _sound, 1, 1);
+      loc.getWorld().playSound(loc, _sound, 1, 1);
     }
 
     int strikes = _minStrikes + (int) Math.round(Math.random() * (_maxStrikes - _minStrikes));
     if (strikes > 0)
     {
       // First strike is always immediate.
-      world.strikeLightningEffect(loc);
+      loc.getWorld().strikeLightningEffect(loc);
       for (int i = 1; i < strikes; ++i)
       {
-        scheduleRandomStrike(plugin, world, loc, _strikeRange, _strikeDuration);
+        scheduleRandomStrike(plugin, loc, _strikeRange, _strikeDuration);
       }
     }
   } // doSpawnEffects
@@ -246,6 +247,112 @@ public class CreatureType
     entity.getEquipment().setItemInHand(_weapon);
     entity.getEquipment().setItemInHandDropChance(_weaponDropChance);
   } // customise
+
+  // --------------------------------------------------------------------------
+  /**
+   * Print a description of this CreatureType to the command sender.
+   * 
+   * @param sender the entity requesting the description.
+   */
+  public void describe(CommandSender sender)
+  {
+    sender.sendMessage(ChatColor.YELLOW + "Creature " + getName() + ":");
+    sender.sendMessage(ChatColor.YELLOW + "    Spawn: " + getCreatureType());
+    sender.sendMessage(ChatColor.YELLOW + "    Health: " + _health + " half hearts");
+    sender.sendMessage(ChatColor.YELLOW + "    Air: " + _air + " ticks");
+    sender.sendMessage(ChatColor.YELLOW + "    Can despawn: " + _despawns);
+    if (getMount().length() != 0)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Mount: " + getMount());
+    }
+    if (getMask() != null)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Mask: " + getMask());
+    }
+    if (_sound != null)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Spawn sound: " + _sound.toString());
+    }
+    if (_maxStrikes > 0)
+    {
+      sender.sendMessage(String.format("%s    Spawn lighting: %d to %d strikes, up to %.2f blocks away, for %d ticks",
+        ChatColor.YELLOW, _minStrikes, _maxStrikes, _strikeRange, _strikeDuration));
+    }
+
+    if (_potions.size() != 0)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Potion effects: ");
+      for (PotionEffect effect : _potions)
+      {
+        String ambient = effect.isAmbient() ? " (ambient)" : "";
+        sender.sendMessage(String.format("%s        %s %d for %d ticks%s",
+          ChatColor.YELLOW, effect.getType().getName(), effect.getAmplifier(), effect.getDuration(), ambient));
+      }
+    }
+
+    if (_helmet != null)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Helmet: " + getItemDescription(_helmet));
+    }
+    // Show drop chance for helmet (head) regardless.
+    sender.sendMessage(String.format("%s    Helmet drop chance: %.2f%%", ChatColor.YELLOW, 100 * _helmetDropChance));
+    if (_chestPlate != null)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Chest plate: " + getItemDescription(_chestPlate));
+      sender.sendMessage(String.format("%s    Chest plate drop chance: %.2f%%", ChatColor.YELLOW, 100 * _chestPlateDropChance));
+    }
+    if (_leggings != null)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Leggings: " + getItemDescription(_leggings));
+      sender.sendMessage(String.format("%s    Leggings drop chance: %.2f%%", ChatColor.YELLOW, 100 * _leggingsDropChance));
+    }
+    if (_boots != null)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Boots: " + getItemDescription(_boots));
+      sender.sendMessage(String.format("%s    Boots drop chance: %.2f%%", ChatColor.YELLOW, 100 * _bootsDropChance));
+    }
+    if (_weapon != null)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Weapon: " + getItemDescription(_weapon));
+      sender.sendMessage(String.format("%s    Weapon drop chance: %.2f%%", ChatColor.YELLOW, 100 * _weaponDropChance));
+    }
+  } // describe
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return a human-readable description of the specified item, suitable for use
+   * in describe().
+   * 
+   * @param item the (assumed non-null) item to describe.
+   * @reutrn the description.
+   */
+  protected String getItemDescription(ItemStack item)
+  {
+    StringBuilder desc = new StringBuilder();
+    desc.append(item.getType().toString());
+    desc.append(", durability ");
+    desc.append(item.getDurability());
+
+    Map<Enchantment, Integer> enchants = item.getEnchantments();
+    if (enchants != null && enchants.size() != 0)
+    {
+      desc.append(" (");
+      int i = 1;
+      for (Entry<Enchantment, Integer> enchant : enchants.entrySet())
+      {
+        desc.append(enchant.getKey().getName());
+        desc.append(' ');
+        desc.append(enchant.getValue());
+        if (i < enchants.size())
+        {
+          desc.append(", ");
+        }
+        ++i;
+      }
+      desc.append(")");
+    }
+    return desc.toString();
+  } // getItemDescription
 
   // --------------------------------------------------------------------------
   /**
@@ -317,7 +424,7 @@ public class CreatureType
       }
       else
       {
-        int damage = section.getInt("damage", 0);
+        int damage = section.getInt("damage", 1);
         item = new ItemStack(material, 1, (short) damage);
 
         if (section.isList("enchantments"))
@@ -368,18 +475,17 @@ public class CreatureType
 
   // --------------------------------------------------------------------------
   /**
-   * Schedule a random, damage-free lighting strike effect within the specified
-   * world.
+   * Schedule a random, damage-free lighting strike effect around the specified
+   * Location.
    * 
    * @param plugin the originating Plugin.
-   * @param world the World where the strike occurs.
    * @param centre the centre of the random coordinate range.
    * @param maxRange the maximum distance of the strike from centre on the X and
    *          Z axes.
    * @param maxDelay the maximum number of ticks to wait before the strike
    *          occurs.
    */
-  protected static void scheduleRandomStrike(Plugin plugin, final World world, Location centre, double maxRange, long maxDelay)
+  protected static void scheduleRandomStrike(Plugin plugin, Location centre, double maxRange, long maxDelay)
   {
     long delay = Math.round(Math.random() * maxDelay);
     double range = maxRange * Math.random();
@@ -393,7 +499,7 @@ public class CreatureType
       @Override
       public void run()
       {
-        world.strikeLightningEffect(loc);
+        loc.getWorld().strikeLightningEffect(loc);
       }
     }, delay);
   } // scheduleRandomStrike

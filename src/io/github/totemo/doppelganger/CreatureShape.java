@@ -6,10 +6,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.util.Vector;
 
@@ -227,15 +228,14 @@ public class CreatureShape
    * Return true if this shape is enabled and placing an item of the specified
    * type at the specified Location would result in this creature shape.
    * 
-   * @param world the World.
    * @param loc the location where the trigger block would be placed.
    * @param placedItemId the ID of the placed block.
    * @return true if placing the specified block at the specified location would
    *         result in a complete creature shape.
    */
-  public boolean isComplete(World world, Location loc, int placedItemId)
+  public boolean isComplete(Location loc, int placedItemId)
   {
-    return isEnabled() && _triggerMaterialId == placedItemId && isCreatureShape(world, loc);
+    return isEnabled() && _triggerMaterialId == placedItemId && isCreatureShape(loc);
   }
 
   // --------------------------------------------------------------------------
@@ -243,33 +243,33 @@ public class CreatureShape
    * Return true if placing the trigger block at the specified Location would
    * result in a complete creature shape.
    * 
-   * @param world the World.
    * @param loc the location where the trigger block would be placed.
    * @return true if placing the trigger block at the specified location would
    *         result in a complete creature shape.
    */
-  public boolean isCreatureShape(World world, Location loc)
+  public boolean isCreatureShape(Location loc)
   {
     for (int i = 0; i < _materialIds.size(); ++i)
     {
-      if (getCreatureBlock(world, loc, i).getTypeId() != _materialIds.get(i))
+      if (getCreatureBlock(loc, i).getTypeId() != _materialIds.get(i))
       {
         return false;
       }
     }
     return true;
   }
-
   // --------------------------------------------------------------------------
   /**
    * Set all of the blocks of the creature shape at the specified location to
    * air.
+   * 
+   * @param loc the location where the trigger block would be placed.
    */
-  public void vaporise(World world, Location loc)
+  public void vaporise(Location loc)
   {
     for (int i = 0; i < _offsets.size(); ++i)
     {
-      getCreatureBlock(world, loc, i).setTypeId(0);
+      getCreatureBlock(loc, i).setTypeId(0);
     }
   }
 
@@ -286,21 +286,58 @@ public class CreatureShape
 
   // --------------------------------------------------------------------------
   /**
-   * Return the block in the World comprising the creature shape with specified
-   * index.
+   * Print a description of this shape to the command sender.
    * 
-   * @param world the World.
-   * @param loc the Location.
+   * @param sender the entity requesting the description.
+   */
+  public void describe(CommandSender sender)
+  {
+    sender.sendMessage(ChatColor.YELLOW + "Shape " + getName() + ":");
+    sender.sendMessage(ChatColor.YELLOW + "    Enabled: " + isEnabled());
+    sender.sendMessage(ChatColor.YELLOW + "    Head material: " + Material.getMaterial(getTriggerMaterialId()).toString());
+    sender.sendMessage(ChatColor.YELLOW + "    Y offset to ground: " + getGroundOffset());
+    if (_materialIds.size() != 0)
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Body: ");
+    }
+    for (int i = 0; i < _materialIds.size(); ++i)
+    {
+      sender.sendMessage(String.format("%s        (%d) %s at (%d, %d, %d)",
+        ChatColor.YELLOW, i + 1, Material.getMaterial(_materialIds.get(i)).toString(),
+        _offsets.get(i).getBlockX(), _offsets.get(i).getBlockY(), _offsets.get(i).getBlockZ()));
+    }
+
+    if (!_types.entrySet().isEmpty())
+    {
+      sender.sendMessage(ChatColor.YELLOW + "    Summoning probabilities: ");
+      double lastWeight = 0.0;
+      for (Entry<Double, String> summon : _types.entrySet())
+      {
+        double percent = 100 * (summon.getKey() - lastWeight) / _types.getTotalWeight();
+        lastWeight = summon.getKey();
+        sender.sendMessage(String.format("%s        %.1f%% %s", ChatColor.YELLOW, percent, summon.getValue()));
+      }
+    }
+  } // describe
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return the Block with the specified index comprising the creature shape,
+   * relative to the location of the trigger block.
+   * 
+   * @param loc the Location of the trigger block.
    * @param index the 0-based index of the block in the shape; 0 is first one
    *          added.
+   * @return the Block with the specified index comprising the creature shape,
+   *         relative to the location of the trigger block.
    */
-  protected Block getCreatureBlock(World world, Location loc, int index)
+  protected Block getCreatureBlock(Location loc, int index)
   {
     Vector offset = _offsets.get(index);
     int x = loc.getBlockX() + offset.getBlockX();
     int y = loc.getBlockY() + offset.getBlockY();
     int z = loc.getBlockZ() + offset.getBlockZ();
-    return world.getBlockAt(x, y, z);
+    return loc.getWorld().getBlockAt(x, y, z);
   }
 
   // --------------------------------------------------------------------------

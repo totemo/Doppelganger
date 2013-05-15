@@ -84,6 +84,17 @@ public class WeightedSelection<E>
 
   // --------------------------------------------------------------------------
   /**
+   * Return the sum of all of the probability weights.
+   * 
+   * @return the sum of all of the probability weights.
+   */
+  public double getTotalWeight()
+  {
+    return _total;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
    * The random number generator.
    */
   protected Random                        _random;
