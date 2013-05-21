@@ -38,6 +38,28 @@ public class CreatureFactory
 
   // --------------------------------------------------------------------------
   /**
+   * Return the type name of the specified LivingEntity.
+   * 
+   * @return the type name of the specified LivingEntity.
+   */
+  public static String getLivingEntityType(LivingEntity living)
+  {
+    if (living instanceof Skeleton && ((Skeleton) living).getSkeletonType() == SkeletonType.WITHER)
+    {
+      return WITHER_SKELETON;
+    }
+    else if (living instanceof Pig && ((Pig) living).hasSaddle())
+    {
+      return SADDLED_PIG;
+    }
+    else
+    {
+      return living.getType().getName();
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
    * Load the creature shapes and types from the configuration file.
    * 
    * @param root the root of the configuration hierarchy.

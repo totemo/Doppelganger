@@ -137,12 +137,24 @@ creatures:
       item: diamond_sword
 
   MolonMan:
-    spawn: WitherSkeleton
+    spawn: Skeleton
     sound: ambience_cave
     helmet:
       item: melon_block
-    chestplate: 
+    weapon:
+      item: stone_sword
+      dropchance: 0.01
+
+  MolonMan2:
+    spawn: Skeleton
+    sound: ambience_cave
+    helmet:
       item: melon_block
+    chestplate:
+      item: iron_chestplate
+    weapon:
+      item: iron_sword
+      dropchance: 0.01
 
   InvisibleBat:
     spawn: Bat
@@ -227,18 +239,13 @@ creatures:
       - type: fire_aspect
         level: 2
     escorts:
-    - spawn: WitherSkeleton
-      weight: 1.0
-      health: 30
       min: 3
       max: 8
-      range: 5.0
-      duration: 40
-      lightning: 0.75
-      weapon:
-        item: diamond_sword
-      helmet:
-        item: diamond_helmet
+      minrange: 1.0
+      maxrange: 5.0
+      summon:
+      - weight: 1.0
+        spawn: ToughSkeleton
 
   jeb_:
     health: 60
@@ -249,7 +256,8 @@ creatures:
     lightning:
       min: 4
       max: 7
-      range: 2.0
+      minrange: 1.0
+      maxrange: 5.0
       duration: 30
     helmet:
       item: skull_item
@@ -258,12 +266,13 @@ creatures:
       item: diamond_sword
       dropchance: 0.05
     escorts:
-    - spawn: FlyingPig
-      min: 6
-      max: 12
-      range: 7.0
-      duration: 40
-      lightning: 1.0
+      min: 3
+      max: 8
+      minrange: 1.0
+      maxrange: 5.0
+      summon:
+      - weight: 1.0
+        spawn: FlyingPig
 
   Dinnerbone:
     health: 80
@@ -272,7 +281,8 @@ creatures:
     lightning:
       min: 4
       max: 7
-      range: 2.0
+      minrange: 1.0
+      maxrange: 5.0
       duration: 30
     helmet:
       item: skull_item
@@ -287,6 +297,14 @@ creatures:
         level: 2
       - type: damage_all
         level: 5
+    escorts:
+      min: 3
+      max: 8
+      minrange: 1.0
+      maxrange: 5.0
+      summon:
+      - weight: 1.0
+        spawn: ToughSkeleton
 
   Villain:
     health: 100
@@ -295,9 +313,10 @@ creatures:
     mask: Ooer
     lightning:
       min: 4
-      max: 7
-      range: 2.0
-      duration: 30
+      max: 12
+      minrange: 2.0
+      maxrange: 10.0
+      duration: 100
     helmet:
       item: skull_item
       dropchance: 0.5
@@ -311,6 +330,19 @@ creatures:
         level: 2
       - type: damage_all
         level: 5
+    escorts:
+      min: 7
+      max: 12
+      minrange: 2.0
+      maxrange: 20.0
+      duration: 100
+      summon:
+      - weight: 1.0
+        spawn: MolonMan
+      - weight: 0.5
+        spawn: MolonMan2
+      - weight: 0.5
+        spawn: Bat
 
         
 players:
@@ -333,4 +365,4 @@ players:
   Villain:
     shapes:
     - diamond_2pillar
-    
+ 

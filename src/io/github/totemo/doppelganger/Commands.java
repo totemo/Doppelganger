@@ -9,8 +9,6 @@ import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.Skeleton.SkeletonType;
 
 import com.amoebaman.kitmaster.utilities.CommandController.SubCommandHandler;
 
@@ -113,6 +111,8 @@ public class Commands
   // --------------------------------------------------------------------------
   /**
    * Handle the /doppel coords [&lt;name&gt;] [&lt;radius&gt;] command.
+   * 
+   * If the name is not specified, any name will match.
    */
   @SubCommandHandler(parent = "doppel", name = "coords", permission = "doppel.coords")
   public void onCommandDoppelCoords(Player player, String[] args)
@@ -169,8 +169,9 @@ public class Commands
         LivingEntity living = doppelgangers.get(i);
         Location loc = living.getLocation();
         player.sendMessage(String.format("%s(%d) %s %s (%d, %d, %d)",
-          ChatColor.YELLOW, i + 1, living.getCustomName(), getLivingEntityType(living),
-            loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+          ChatColor.YELLOW, i + 1, living.getCustomName(),
+          CreatureFactory.getLivingEntityType(living),
+          loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
       }
     }
   } // onCommandDoppelCoords
@@ -257,7 +258,7 @@ public class Commands
         LivingEntity living = doppelgangers.get(i);
         Location loc = living.getLocation();
         String description = String.format("%s(%d) %s %s (%d, %d, %d)",
-          ChatColor.YELLOW, i + 1, living.getCustomName(), getLivingEntityType(living),
+          ChatColor.YELLOW, i + 1, living.getCustomName(), CreatureFactory.getLivingEntityType(living),
           loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         sender.sendMessage(description);
         _plugin.getLogger().info("Killing " + description);
@@ -461,7 +462,11 @@ public class Commands
    * Return a list of all LivingEntity instances with the specified visible
    * custom name within the specified radius of the centre location.
    * 
-   * The search volume is a sphere with the specified centre and radius.
+   * I tried setting the name "<anonymous>" when spawning escorts, but not
+   * showing the name. The client still shows it when at very short range and
+   * for certain view angles only. The name "." is less noticeable, but still
+   * noticeable enough that using a hidden custom name is not a viable way of
+   * marking Doppelganger-spawned mobs.
    * 
    * @param name the custom name, which must be visible; if this is null, any
    *          name will do.
@@ -475,31 +480,14 @@ public class Commands
     ArrayList<LivingEntity> doppelgangers = new ArrayList<LivingEntity>();
     for (LivingEntity living : centre.getWorld().getLivingEntities())
     {
-      if (living.isCustomNameVisible() && (name == null || name.equals(living.getCustomName())) &&
+      if (living.isCustomNameVisible() &&
+          (name == null || name.equals(living.getCustomName())) &&
           living.getLocation().distanceSquared(centre) < radiusSquared)
       {
         doppelgangers.add(living);
       }
     }
     return doppelgangers;
-  }
-
-  // --------------------------------------------------------------------------
-  /**
-   * Return the type name of the specified LivingEntity.
-   * 
-   * @return the type name of the specified LivingEntity.
-   */
-  protected String getLivingEntityType(LivingEntity living)
-  {
-    if (living instanceof Skeleton && ((Skeleton) living).getSkeletonType() == SkeletonType.WITHER)
-    {
-      return "WitherSkeleton";
-    }
-    else
-    {
-      return living.getType().getName();
-    }
   }
 
   // --------------------------------------------------------------------------

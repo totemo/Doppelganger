@@ -145,6 +145,7 @@ public class Doppelganger extends JavaPlugin implements Listener
     if (type != null)
     {
       type.doSpawnEffects(this, loc);
+      type.spawnEscorts(this, loc);
     }
 
     LivingEntity doppelganger = _creatureFactory.spawnCreature(creatureType, loc, name);
@@ -157,6 +158,7 @@ public class Doppelganger extends JavaPlugin implements Listener
         doppelganger.getEquipment().setHelmet(getPlayerHead(playerNameOfHead));
       }
     }
+
     return doppelganger;
   } // spawnDoppelganger
 
