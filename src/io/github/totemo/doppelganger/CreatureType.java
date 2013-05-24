@@ -292,7 +292,7 @@ public class CreatureType
    */
   public void describe(CommandSender sender)
   {
-    sender.sendMessage(ChatColor.GOLD + "Creature " + ChatColor.YELLOW + getName() + ":");
+    sender.sendMessage(ChatColor.GOLD + "Creature " + getName() + ":");
     sender.sendMessage(ChatColor.GOLD + "    Spawn: " + ChatColor.YELLOW + getCreatureType());
     sender.sendMessage(ChatColor.GOLD + "    Health: " + ChatColor.YELLOW + _health + " half hearts");
     sender.sendMessage(ChatColor.GOLD + "    Air: " + ChatColor.YELLOW + _air + " ticks");
@@ -336,25 +336,25 @@ public class CreatureType
       ChatColor.GOLD, ChatColor.YELLOW, 100 * _helmetDropChance));
     if (_chestPlate != null)
     {
-      sender.sendMessage(ChatColor.GOLD + "    Chest plate: " + getItemDescription(_chestPlate));
+      sender.sendMessage(ChatColor.GOLD + "    Chest plate: " + ChatColor.YELLOW + getItemDescription(_chestPlate));
       sender.sendMessage(String.format("%s    Chest plate drop chance: %s%.2f%%",
         ChatColor.GOLD, ChatColor.YELLOW, 100 * _chestPlateDropChance));
     }
     if (_leggings != null)
     {
-      sender.sendMessage(ChatColor.GOLD + "    Leggings: " + getItemDescription(_leggings));
+      sender.sendMessage(ChatColor.GOLD + "    Leggings: " + ChatColor.YELLOW + getItemDescription(_leggings));
       sender.sendMessage(String.format("%s    Leggings drop chance: %s%.2f%%",
         ChatColor.GOLD, ChatColor.YELLOW, 100 * _leggingsDropChance));
     }
     if (_boots != null)
     {
-      sender.sendMessage(ChatColor.GOLD + "    Boots: " + getItemDescription(_boots));
+      sender.sendMessage(ChatColor.GOLD + "    Boots: " + ChatColor.YELLOW + getItemDescription(_boots));
       sender.sendMessage(String.format("%s    Boots drop chance: %s%.2f%%",
         ChatColor.GOLD, ChatColor.YELLOW, 100 * _bootsDropChance));
     }
     if (_weapon != null)
     {
-      sender.sendMessage(ChatColor.GOLD + "    Weapon: " + getItemDescription(_weapon));
+      sender.sendMessage(ChatColor.GOLD + "    Weapon: " + ChatColor.YELLOW + getItemDescription(_weapon));
       sender.sendMessage(String.format("%s    Weapon drop chance: %s%.2f%%",
         ChatColor.GOLD, ChatColor.YELLOW, 100 * _weaponDropChance));
     }
