@@ -136,8 +136,7 @@ public class CreatureFactory
           ConfigurationSection player = playersSection.getConfigurationSection(playerName);
 
           // If a specific creature type to spawn is not specified, it defaults
-          // to
-          // a type with the same name as the player (if that exists).
+          // to a type with the same name as the player (if that exists).
           String spawn = player.getString("spawn", playerName);
           if (!isValidCreatureType(spawn))
           {

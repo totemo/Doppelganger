@@ -59,8 +59,7 @@ public class Commands
 
   // --------------------------------------------------------------------------
   /**
-   * Handle the /doppel info [list | shape &lt;name&gt; | creature &lt;name&gt;
-   * | player &lt;name&gt;] command.
+   * Handle the /doppel help command.
    */
   @SubCommandHandler(parent = "doppel", name = "help", permission = "doppel.help")
   public void onCommandDoppeHelp(CommandSender sender, String[] args)
@@ -82,24 +81,6 @@ public class Commands
 
     // In all other cases, including failure:
     _help.showHelp(sender, "help", true);
-  }
-
-  // --------------------------------------------------------------------------
-  /**
-   * Handle the /doppel reload command.
-   */
-  @SubCommandHandler(parent = "doppel", name = "reload", permission = "doppel.reload")
-  public void onCommandDoppeReload(CommandSender sender, String[] args)
-  {
-    if (args.length == 1)
-    {
-      _plugin.reloadConfig();
-      sender.sendMessage(_successColour + "Doppelganger configuration reloaded.");
-    }
-    else
-    {
-      showUsage(sender, "reload");
-    }
   }
 
   // --------------------------------------------------------------------------

@@ -12,18 +12,9 @@ help:
       variant:
         1:
           usage: 
-          - "&r&f/&6doppel help &f[&6reload&f|&6info&f|&6coords&f|&6kill&f|&6spawn&f|&6maintain&f]"
+          - "&r&f/&6doppel help &f[&6info&f|&6coords&f|&6kill&f|&6spawn&f|&6maintain&f]"
           description:
           - "&r&f    Show descriptions of &6/doppel &fsubcommands."
-          - ""
-
-    reload:
-      variant:
-        1:
-          usage: 
-          - "&r&f/&6doppel reload"
-          description: 
-          - "&r&f    Reload the Doppelganger configuration."
           - ""
 
     info:
