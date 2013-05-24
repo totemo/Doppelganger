@@ -339,10 +339,16 @@ public class Commands
     String name = (tail.size() > 0) ? tail.remove(0) : null;
     if (loc == null || volume == null || type == null || name == null || tail.size() > 0)
     {
-      showUsage(sender, "spawn");
+      showUsage(sender, "maintain");
     }
     else
     {
+      if (!volume.contains(loc))
+      {
+        sender.sendMessage(_failureColour + "The checked volume must contain the spawn location.");
+        return;
+      }
+
       ArrayList<LivingEntity> doppelgangers = findDoppelgangers(name, volume);
       String message = formatVolumeMessage(volume, "There are", doppelgangers.size());
       sender.sendMessage(_successColour + message);
@@ -378,7 +384,6 @@ public class Commands
       }
     }
   } // onCommandDoppelMaintain
-
   // --------------------------------------------------------------------------
   /**
    * Return a list of all LivingEntity instances with the specified visible
