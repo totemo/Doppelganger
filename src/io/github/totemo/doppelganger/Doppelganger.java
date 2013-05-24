@@ -58,7 +58,8 @@ public class Doppelganger extends JavaPlugin implements Listener
       Matcher nameMatcher = _namePattern.matcher(doppelgangerName);
       if (!_configuration.isArbitraryNameAllowed() && !nameMatcher.matches())
       {
-        event.getPlayer().sendMessage(ChatColor.RED + "\"" + doppelgangerName + "\" is not a valid player name.");
+        event.getPlayer().sendMessage(
+          ChatColor.DARK_RED + "\"" + doppelgangerName + "\" is not a valid player name.");
       }
       else
       {

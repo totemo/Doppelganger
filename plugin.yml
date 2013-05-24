@@ -6,18 +6,25 @@ author: totemo
 website: http://github.com/totemo/Doppelganger
 commands:
   doppel:
-    description: Describes, finds, spawns and kills doppelgangers.
-    usage: /doppel info|coords|kill|spawn|maintain <subcommand arguments>
+    description: Describes, finds, spawns and kills doppelgangers. See /doppel help.
+    usage: /doppel [help|reload|info|coords|kill|spawn|maintain] <subcommand arguments>
     permission: doppel.info
 permissions:
   doppelganger.*:
     description: Permission to use doppelganger commands.
     children:
+      doppelganger.help: true
       doppelganger.info: true
       doppelganger.coords: true
       doppelganger.kill: true
       doppelganger.spawn: true
       doppelganger.maintain: true
+  doppelganger.help:
+    description: Allows you to see Doppelganger command help and needed to use all other /doppel commands.
+    default: op
+  doppelganger.reload:
+    description: Allows you to reload the Doppelganger configuration.
+    default: op
   doppelganger.info:
     description: Allows you to list doppelganger types and their attibutes.
     default: op

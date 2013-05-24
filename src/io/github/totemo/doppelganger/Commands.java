@@ -1,15 +1,18 @@
 package io.github.totemo.doppelganger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+import com.amoebaman.kitmaster.utilities.CommandController.CommandHandler;
 import com.amoebaman.kitmaster.utilities.CommandController.SubCommandHandler;
 
 // --------------------------------------------------------------------------
@@ -27,10 +30,83 @@ public class Commands
   public Commands(Doppelganger plugin)
   {
     _plugin = plugin;
+    _help = new Help(plugin);
   }
 
   // --------------------------------------------------------------------------
+  /**
+   * This method is called if none of the subcommands matches exactly.
+   * 
+   * We use it to print the help messages for all commands.
+   */
+  @CommandHandler(name = "doppel", permission = "doppel.help")
+  public void onCommand(CommandSender sender, String[] args)
+  {
+    if (args.length > 0)
+    {
+      sender.sendMessage(_failureColour + "\"" + args[0] + "\"" + " is not a valid /doppel subcommand.");
+    }
 
+    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+      "&eUsage summary:"));
+    for (String topic : _help.getTopics())
+    {
+      _help.showHelp(sender, topic, false);
+    }
+    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+      "&eType /doppel help &d&osubcommand &efor detailed descriptions of subcommands."));
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Handle the /doppel info [list | shape &lt;name&gt; | creature &lt;name&gt;
+   * | player &lt;name&gt;] command.
+   */
+  @SubCommandHandler(parent = "doppel", name = "help", permission = "doppel.help")
+  public void onCommandDoppeHelp(CommandSender sender, String[] args)
+  {
+    if (args.length == 2)
+    {
+      String topic = args[1];
+      if (_help.getTopics().contains(topic))
+      {
+        _help.showHelp(sender, topic, true);
+        return;
+      }
+      else
+      {
+        sender.sendMessage(_failureColour + "\"" + topic + "\" is not a valid help topic.");
+        // Fall through.
+      }
+    }
+
+    // In all other cases, including failure:
+    _help.showHelp(sender, "help", true);
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Handle the /doppel reload command.
+   */
+  @SubCommandHandler(parent = "doppel", name = "reload", permission = "doppel.reload")
+  public void onCommandDoppeReload(CommandSender sender, String[] args)
+  {
+    if (args.length == 1)
+    {
+      _plugin.reloadConfig();
+      sender.sendMessage(_successColour + "Doppelganger configuration reloaded.");
+    }
+    else
+    {
+      showUsage(sender, "reload");
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Handle the /doppel info [list | shape &lt;name&gt; | creature &lt;name&gt;
+   * | player &lt;name&gt;] command.
+   */
   @SubCommandHandler(parent = "doppel", name = "info", permission = "doppel.info")
   public void onCommandDoppelInfo(CommandSender sender, String[] args)
   {
@@ -49,7 +125,7 @@ public class Commands
         CreatureShape shape = _plugin.getCreatureFactory().getCreatureShape(args[2]);
         if (shape == null)
         {
-          sender.sendMessage(ChatColor.RED + "There is no shape by that name.");
+          sender.sendMessage(_failureColour + "There is no shape by that name.");
         }
         else
         {
@@ -62,7 +138,7 @@ public class Commands
         CreatureType type = _plugin.getCreatureFactory().getCreatureType(args[2]);
         if (type == null)
         {
-          sender.sendMessage(ChatColor.RED + "There is no creature type by that name.");
+          sender.sendMessage(_failureColour + "There is no creature type by that name.");
         }
         else
         {
@@ -76,21 +152,21 @@ public class Commands
         String creature = _plugin.getCreatureFactory().getPlayerCreature(name);
         if (creature == null)
         {
-          sender.sendMessage(ChatColor.RED + "No specific creature type is defined for that player name.");
+          sender.sendMessage(_failureColour + "No specific creature type is defined for that player name.");
         }
         else
         {
-          sender.sendMessage(ChatColor.YELLOW + "Player " + name + " will spawn a creature of type " + creature + ".");
+          sender.sendMessage(_successColour + "Player " + name + " will spawn a creature of type " + creature + ".");
           ArrayList<CreatureShape> shapes = _plugin.getCreatureFactory().getPlayerShapes(name);
           if (shapes.size() == 0)
           {
-            sender.sendMessage(ChatColor.YELLOW + name
+            sender.sendMessage(_successColour + name
                                + "can only be spawned by command because no summoning shapes are defined.");
           }
           else
           {
             StringBuilder message = new StringBuilder();
-            message.append(ChatColor.YELLOW);
+            message.append(_successColour);
             message.append(name);
             message.append(" can be spawned by the following shapes:");
             for (CreatureShape shape : shapes)
@@ -104,72 +180,50 @@ public class Commands
         return;
       }
     }
-    sender.sendMessage(ChatColor.RED +
-                       "Usage: /doppel info [list | shape <name> | creature <name> | player <name>]");
+
+    showUsage(sender, "info");
   } // onCommandDoppelInfo
 
   // --------------------------------------------------------------------------
   /**
-   * Handle the /doppel coords [&lt;name&gt;] [&lt;radius&gt;] command.
-   * 
-   * If the name is not specified, any name will match.
+   * Handle /doppel coords:
+   * <ul>
+   * <li>/doppel coords sphere here radius [name]</li>
+   * <li>/doppel coords sphere [world] x y z radius [name]</li>
+   * <li>/doppel coords box [world] x1 y1 z1 x2 y2 z2 [name]</li>
+   * </ul>
+   * If the name is not specified, any name will match. The CommandSender can be
+   * a player or a command block.
    */
   @SubCommandHandler(parent = "doppel", name = "coords", permission = "doppel.coords")
-  public void onCommandDoppelCoords(Player player, String[] args)
+  public void onCommandDoppelCoords(CommandSender sender, String[] args)
   {
-    ArrayList<LivingEntity> doppelgangers = null;
-    Double radius = Double.MAX_VALUE;
-    if (args.length == 1)
-    {
-      doppelgangers = findDoppelgangers(null, player.getLocation(), radius);
-    }
-    else if (args.length == 2)
-    {
-      Double tryRadius = parseDouble(args, 1);
-      if (tryRadius == null)
-      {
-        // tryRadius didn't parse so assume it was a name.
-        doppelgangers = findDoppelgangers(args[1], player.getLocation(), radius);
-      }
-      else
-      {
-        radius = tryRadius;
-        doppelgangers = findDoppelgangers(null, player.getLocation(), radius);
-      }
-    }
-    else if (args.length == 3)
-    {
-      radius = parseDouble(args, 2);
-      if (radius != null && radius >= 0.0)
-      {
-        doppelgangers = findDoppelgangers(args[1], player.getLocation(), radius);
-      }
-    }
+    ArrayList<String> tail = tail(args, 1);
+    Volume volume = parseVolume(tail, sender);
+    String name = (tail.size() > 0) ? tail.remove(0) : null;
 
-    if (doppelgangers == null)
+    // By this point we should have consumed all the arguments.
+    if (volume == null || tail.size() > 0)
     {
-      player.sendMessage(ChatColor.RED + "Usage: /doppel coords [<name>] [<radius>]");
+      showUsage(sender, "coords");
     }
     else
     {
-      String message;
-      if (radius > 1e9)
-      {
-        message = String.format("There are %d matching doppelgangers loaded in this world.", doppelgangers.size());
-      }
-      else
-      {
-        message = String.format("There are %d matching doppelgangers loaded within %5g blocks of you.",
-          doppelgangers.size(), radius);
-      }
-      player.sendMessage(ChatColor.YELLOW + message);
+      // Arguments are valid. Do the work.
+      ArrayList<LivingEntity> doppelgangers = findDoppelgangers(name, volume);
+      String message = formatVolumeMessage(volume, "There are", doppelgangers.size());
+
+      // Command blocks output a redstone signal if result message is not red.
+      // Well... ideally, if the Minecraft wiki wasn't full of lies.
+      ChatColor colour = (doppelgangers.size() == 0) ? _failureColour : _successColour;
+      sender.sendMessage(colour + message);
 
       for (int i = 0; i < doppelgangers.size(); ++i)
       {
         LivingEntity living = doppelgangers.get(i);
         Location loc = living.getLocation();
-        player.sendMessage(String.format("%s(%d) %s %s (%d, %d, %d)",
-          ChatColor.YELLOW, i + 1, living.getCustomName(),
+        sender.sendMessage(String.format("%s(%d) %s %s (%d, %d, %d)",
+          _successColour, i + 1, living.getCustomName(),
           CreatureFactory.getLivingEntityType(living),
           loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
       }
@@ -178,8 +232,13 @@ public class Commands
 
   // --------------------------------------------------------------------------
   /**
-   * Handle the /doppel kill &lt;name&gt; &lt;radius&gt; [[&lt;world&gt;]
-   * &lt;x&gt; &lt;y&gt; &lt;z&gt;] command.
+   * Handle /doppel:
+   * 
+   * <pre>
+   * /doppel kill sphere here radius name"
+   * /doppel kill sphere [world] x y z radius name"
+   * /doppel kill box [world] x1 y1 z1 x2 y2 z2 name"
+   * </pre>
    * 
    * @param sender the issuer of the command.
    * @param args command arguments after the initial /doppel.
@@ -187,78 +246,27 @@ public class Commands
   @SubCommandHandler(parent = "doppel", name = "kill", permission = "doppel.kill")
   public void onCommandDoppelKill(CommandSender sender, String[] args)
   {
-    Double radius = null;
-    Location centre = null;
-    if (args.length == 3)
-    {
-      // /doppel kill <name> <radius>
-      centre = getLocation(sender);
-      if (centre == null)
-      {
-        sender.sendMessage(ChatColor.RED + "You must specify the world and coordinates.");
-      }
-      else
-      {
-        radius = parseDouble(args, 2);
-      }
-    }
-    else if (args.length == 6)
-    {
-      // /doppel kill <name> <radius> <x> <y> <z>
-      // Check that the CommandSender implies a World for the coordinates.
-      Location senderLocation = getLocation(sender);
-      if (senderLocation == null)
-      {
-        sender.sendMessage(ChatColor.RED + "You must specify the world.");
-      }
-      else
-      {
-        radius = parseDouble(args, 2);
-        centre = parseLocation(args, 3, ((Player) sender).getWorld());
-      }
-    }
-    else if (args.length == 7)
-    {
-      // /doppel kill <name> <radius> <world> <x> <y> <z>
-      radius = parseDouble(args, 2);
-      World world = sender.getServer().getWorld(args[3]);
-      if (world == null)
-      {
-        sender.sendMessage(ChatColor.RED + "There is no world named " + args[3] + ".");
-      }
-      else
-      {
-        centre = parseLocation(args, 4, world);
-      }
-    }
+    ArrayList<String> tail = tail(args, 1);
+    Volume volume = parseVolume(tail, sender);
 
-    // Were the centre and radius were determined somehow?
-    if (centre == null || radius == null)
+    // Need a valid volume and a final argument for the name.
+    if (volume == null || tail.size() != 1)
     {
-      sender.sendMessage(ChatColor.RED + "Usage: /doppel kill <name> <radius> [[<world>] <x> <y> <z>]");
+      showUsage(sender, "kill");
     }
     else
     {
-      ArrayList<LivingEntity> doppelgangers = findDoppelgangers(args[1], centre, radius);
-      String message;
-      if (radius > 1e9)
-      {
-        message = String.format("Killing %d matching, loaded doppelgangers in %s.",
-          doppelgangers.size(), centre.getWorld().getName());
-      }
-      else
-      {
-        message = String.format("Killing %d matching, loaded doppelgangers within %5g blocks of (%d, %d, %d) in %s.",
-          doppelgangers.size(), radius, centre.getBlockX(), centre.getBlockY(), centre.getBlockZ(), centre.getWorld().getName());
-      }
-      sender.sendMessage(ChatColor.YELLOW + message);
+      ArrayList<LivingEntity> doppelgangers = findDoppelgangers(tail.get(0), volume);
+      String message = formatVolumeMessage(volume, "Killing", doppelgangers.size());
+      ChatColor colour = (doppelgangers.size() == 0) ? _failureColour : _successColour;
+      sender.sendMessage(colour + message);
 
       for (int i = 0; i < doppelgangers.size(); ++i)
       {
         LivingEntity living = doppelgangers.get(i);
         Location loc = living.getLocation();
         String description = String.format("%s(%d) %s %s (%d, %d, %d)",
-          ChatColor.YELLOW, i + 1, living.getCustomName(), CreatureFactory.getLivingEntityType(living),
+          _successColour, i + 1, living.getCustomName(), CreatureFactory.getLivingEntityType(living),
           loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         sender.sendMessage(description);
         _plugin.getLogger().info("Killing " + description);
@@ -269,11 +277,12 @@ public class Commands
 
   // --------------------------------------------------------------------------
   /**
-   * Handle the /doppel spawn [[&lt;world&gt;] &lt;x&gt; &lt;y&gt; &lt;z&gt;]
-   * &lt;type&gt; [&lt;name&gt;] command.
+   * Handle /doppel spawn:
    * 
-   * If the sender is a player and the world and x, y and z coordinates are
-   * omitted, the creature spawns at the player location.
+   * <pre>
+   * /doppel spawn here type [name]
+   * /doppel spawn at [world] x y z type [name]
+   * </pre>
    * 
    * @param sender the issuer of the command.
    * @param args command arguments after the initial /doppel.
@@ -281,97 +290,37 @@ public class Commands
   @SubCommandHandler(parent = "doppel", name = "spawn", permission = "doppel.spawn")
   public void onCommandDoppelSpawn(CommandSender sender, String[] args)
   {
-    String type = null;
-    String name = null;
-    Location loc = null;
-    if (args.length == 2 || args.length == 3)
-    {
-      // /doppel spawn <type>
-      type = args[1];
-      if (args.length == 3)
-      {
-        name = args[2];
-      }
-      loc = getLocation(sender);
-      if (loc == null)
-      {
-        sender.sendMessage(ChatColor.RED + "You must specify the world and coordinates.");
-      }
-    }
-    else if (args.length == 5)
-    {
-      // /doppel spawn <x> <y> <z> <type>
-      type = args[4];
-      Location senderLoc = getLocation(sender);
-      if (senderLoc == null)
-      {
-        sender.sendMessage(ChatColor.RED + "You must specify the world.");
-      }
-      else
-      {
-        loc = parseLocation(args, 1, senderLoc.getWorld());
-      }
-    }
-    else if (args.length == 6)
-    {
-      // Two cases:
-      // (1) EITHER (common):
-      // /doppel spawn <x> <y> <z> <type> <name>
-      // (2) OR (uncommon):
-      // /doppel spawn <world> <x> <y> <z> <type>
+    ArrayList<String> tail = tail(args, 1);
+    Location loc = parseLocation(tail, sender);
+    String type = (tail.size() > 0) ? tail.remove(0) : null;
+    String name = (tail.size() > 0) ? tail.remove(0) : null;
 
-      // Try case (2) first.
-      World world = sender.getServer().getWorld(args[1]);
-      if (world == null)
-      {
-        // World is invalid. Assume this is case (1).
-        Location senderLoc = getLocation(sender);
-        if (senderLoc == null)
-        {
-          sender.sendMessage(ChatColor.RED + "You must specify the world.");
-        }
-        else
-        {
-          loc = parseLocation(args, 1, senderLoc.getWorld());
-          type = args[4];
-          name = args[5];
-        }
-      }
-      else
-      {
-        // World name is valid. Case (2) confirmed.
-        loc = parseLocation(args, 2, world);
-        type = args[5];
-      }
-    }
-    else if (args.length == 7)
+    // name is allowed to be null.
+    if (loc == null || type == null || tail.size() > 0)
     {
-      // /doppel spawn <world> <x> <y> <z> <type> <name>
-      World world = sender.getServer().getWorld(args[1]);
-      if (world == null)
-      {
-        sender.sendMessage(ChatColor.RED + "There is no world named " + args[1] + ".");
-      }
-      else
-      {
-        loc = parseLocation(args, 2, world);
-      }
-      type = args[5];
-      name = args[6];
-    }
-
-    if (loc == null || type == null)
-    {
-      sender.sendMessage(ChatColor.RED + "Usage: /doppel spawn [[<world>] <x> <y> <z>] <type> [<name>]");
+      showUsage(sender, "spawn");
     }
     else
     {
-      _plugin.spawnDoppelganger(type, name, loc);
+      spawnAndLog(sender, type, name, loc);
     }
   } // onCommandDoppelSpawn
 
   // --------------------------------------------------------------------------
   /**
+   * Handle /doppel maintain:
+   * 
+   * <pre>
+   * /doppel maintain at [world] x y z box [world] x1 y1 z1 x2 y2 z2 type name"
+   * /doppel maintain at [world] x y z sphere [world] xc yc zc radius type name"
+   * </pre>
+   * 
+   * Technically, here is also allowed as a spawn location, but it's not much
+   * use since this command is really just for command blocks, and mobs spawned
+   * into a command block will be stuck.
+   * 
+   * The name parameter is required so that we can find the doppelganger (by
+   * name) in the specified volume.
    * 
    * @param sender the issuer of the command.
    * @param args command arguments after the initial /doppel.
@@ -379,7 +328,128 @@ public class Commands
   @SubCommandHandler(parent = "doppel", name = "maintain", permission = "doppel.maintain")
   public void onCommandDoppelMaintain(CommandSender sender, String[] args)
   {
-    sender.sendMessage(ChatColor.RED + "NOT YET IMPLEMENTED: /doppel maintain");
+    ArrayList<String> tail = tail(args, 1);
+    Location loc = parseLocation(tail, sender);
+    Volume volume = parseVolume(tail, sender);
+    String type = (tail.size() > 0) ? tail.remove(0) : null;
+    String name = (tail.size() > 0) ? tail.remove(0) : null;
+    if (loc == null || volume == null || type == null || name == null || tail.size() > 0)
+    {
+      showUsage(sender, "spawn");
+    }
+    else
+    {
+      ArrayList<LivingEntity> doppelgangers = findDoppelgangers(name, volume);
+      String message = formatVolumeMessage(volume, "There are", doppelgangers.size());
+      sender.sendMessage(_successColour + message);
+
+      if (doppelgangers.size() < 1)
+      {
+        spawnAndLog(sender, type, name, loc);
+      }
+      else if (doppelgangers.size() > 1)
+      {
+        // Find the oldest creature.
+        LivingEntity oldest = null;
+        int ticksLived = -1;
+        for (LivingEntity living : doppelgangers)
+        {
+          if (living.getTicksLived() > ticksLived)
+          {
+            ticksLived = living.getTicksLived();
+            oldest = living;
+          }
+        }
+
+        // Kill all but the oldest.
+        sender.sendMessage(String.format("%sKilling %d extra doppelganger(s).",
+          _successColour, (doppelgangers.size() - 1)));
+        for (LivingEntity living : doppelgangers)
+        {
+          if (living != oldest)
+          {
+            living.remove();
+          }
+        }
+      }
+    }
+  } // onCommandDoppelMaintain
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return a list of all LivingEntity instances with the specified visible
+   * custom name within the specified volume.
+   * 
+   * I tried setting the name "<anonymous>" when spawning escorts, but not
+   * showing the name. The client still shows it when at very short range and
+   * for certain view angles only. The name "." is less noticeable, but still
+   * noticeable enough that using a hidden custom name is not a viable way of
+   * marking Doppelganger-spawned mobs.
+   * 
+   * @param name the custom name, which must be visible; if this is null, any
+   *          name will do.
+   * @param volume the volume to be searched for doppelgangers.
+   * @return a list of the matching LivingEntity instances.
+   */
+  protected ArrayList<LivingEntity> findDoppelgangers(String name, Volume volume)
+  {
+    ArrayList<LivingEntity> doppelgangers = new ArrayList<LivingEntity>();
+    for (LivingEntity living : volume.getWorld().getLivingEntities())
+    {
+      if (living.isCustomNameVisible() &&
+          (name == null || name.equals(living.getCustomName())) &&
+          volume.contains(living.getLocation()))
+      {
+        doppelgangers.add(living);
+      }
+    }
+    return doppelgangers;
+  }
+
+  // --------------------------------------------------------------------------
+
+  protected void spawnAndLog(CommandSender sender, String type, String name, Location loc)
+  {
+    if (_plugin.getCreatureFactory().isValidCreatureType(type))
+    {
+      LivingEntity doppelganger = _plugin.spawnDoppelganger(type, name, loc);
+      if (doppelganger == null)
+      {
+        sender.sendMessage(String.format(
+          "%sSpawning a %s named %s at (%d,%d,%d) in %s failed unexpectedly.",
+          _failureColour, type, name, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
+        _plugin.getLogger().info(String.format(
+          "%s tried to spawn a %s named %s at (%d,%d,%d) in %s but it failed unexpectedly.",
+          sender.getName(), type, name, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
+      }
+      else
+      {
+        sender.sendMessage(String.format(
+          "%sSpawned a %s named %s at (%d,%d,%d) in %s.",
+          _successColour, type, name, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
+        _plugin.getLogger().info(String.format(
+          "%s spawned a %s named %s at (%d,%d,%d) in %s.",
+          sender.getName(), type, name, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
+      }
+    }
+    else
+    {
+      sender.sendMessage(String.format("%s\"%s\" is not a valid creature type.", _failureColour, type));
+    }
+  } // spawnAndLog
+
+  // --------------------------------------------------------------------------
+  /**
+   * Show the correct usage syntax of the subcommand corresponding to topic.
+   * 
+   * @param sender the command sender.
+   * @param topic the help topic and subcommand name.
+   */
+  protected void showUsage(CommandSender sender, String topic)
+  {
+    sender.sendMessage(_failureColour + "Incorrect arguments.");
+    sender.sendMessage(ChatColor.YELLOW + "Usage:");
+    _help.showHelp(sender, topic, false);
   }
 
   // --------------------------------------------------------------------------
@@ -390,7 +460,7 @@ public class Commands
    * @return the Location of the specified CommandSender, or null if the sender
    *         has no Location (e.g. the console).
    */
-  protected Location getLocation(CommandSender sender)
+  protected static Location getLocation(CommandSender sender)
   {
     if (sender instanceof Player)
     {
@@ -408,19 +478,161 @@ public class Commands
 
   // --------------------------------------------------------------------------
   /**
-   * Attempt to parse a double value from args[index].
+   * Return a list containing the tail of the args array, from startIndex
+   * onwards.
    * 
-   * @param args the args array passed to the subcommand.
-   * @param index the index into args[].
+   * @param args an array of Strings.
+   * @param startIndex the first element of args that will appear in the
+   *          returned list; all previous elements of args are skipped.
+   * @return a list containing the tail of the args array, from startIndex
+   *         onwards.
+   */
+  protected static ArrayList<String> tail(String[] args, int startIndex)
+  {
+    return new ArrayList<String>(Arrays.asList(Arrays.copyOfRange(args, startIndex, args.length)));
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Parse a World from the first argument of the argument list and consume it
+   * from the arguments if successful.
+   * 
+   * @param args the argument list.
+   * @param sender the command sender, used to infer the default world if the
+   *          sender is a player or command block.
+   * @return a World if it can be parsed from args, or failing that, inferred
+   *         from the sender's Location, or null if not possible to determine a
+   *         world. If the World was parsed from the args, the first argument is
+   *         removed from the list.
+   */
+  protected static World parseWorld(ArrayList<String> args, CommandSender sender)
+  {
+    Server server = sender.getServer();
+    World world = (args.size() >= 1) ? server.getWorld(args.get(0)) : null;
+    if (world == null)
+    {
+      Location senderLoc = getLocation(sender);
+      if (senderLoc == null)
+      {
+        return null;
+      }
+      else
+      {
+        world = senderLoc.getWorld();
+      }
+    }
+    else
+    {
+      // Consume the (valid) world name.
+      args.remove(0);
+    }
+    return world;
+  } // parseWorld
+
+  // --------------------------------------------------------------------------
+  /**
+   * Parse x, y and z coordinates from the first three arguments in args (if
+   * present).
+   * 
+   * @param args the argument list.
+   * @param world the world in which the coordinates apply.
+   * @return the corresponding Location, or null on error. If a valid Location
+   *         is returned, the first three arguments from args are consumed;
+   *         otherwise, no arguments are consumed.
+   */
+  protected static Location parseCoordinates(ArrayList<String> args, World world)
+  {
+    if (args.size() >= 3)
+    {
+      Double x = parseDouble(args, 0);
+      Double y = parseDouble(args, 1);
+      Double z = parseDouble(args, 2);
+      if (x != null && y != null && z != null)
+      {
+        Location loc = new Location(world, x, y, z);
+        args.remove(0);
+        args.remove(0);
+        args.remove(0);
+        return loc;
+      }
+    }
+
+    // All other cases.
+    return null;
+  } // parseCoordinates
+
+  // --------------------------------------------------------------------------
+  /**
+   * Parse an x, y, z Location with optional World out of the command line
+   * arguments and remove those arguments from the list if successful.
+   * 
+   * Valid argument syntax:
+   * 
+   * <pre>
+   * here
+   * at [world] x y z
+   * </pre>
+   * 
+   * If the World is not specified, the World of the CommandSender will be used
+   * (if the sender has a Location).
+   * 
+   * @param args the argument list; successfully parsed arguments are removed
+   *          from the list.
+   * @param sender the command sender. If the command sender has a Location,
+   *          this may be used when required.
+   * @return the parsed Location or null on error.
+   */
+  protected static Location parseLocation(ArrayList<String> args, CommandSender sender)
+  {
+    if (args.size() >= 1 && args.get(0).equals("here"))
+    {
+      args.remove(0);
+      Location senderLoc = getLocation(sender);
+      if (senderLoc == null)
+      {
+        sender.sendMessage(_failureColour + "This command cannot be run from the console.");
+      }
+      return senderLoc;
+    }
+    else if (args.size() >= 4 && args.get(0).equals("at"))
+    {
+      args.remove(0);
+      World world = parseWorld(args, sender);
+      if (world == null)
+      {
+        sender.sendMessage(_failureColour + "You must specify the world.");
+        return null;
+      }
+      else
+      {
+        Location loc = parseCoordinates(args, world);
+        if (loc == null)
+        {
+          sender.sendMessage(_failureColour + "Invalid coordinates specified.");
+        }
+        return loc;
+      }
+    }
+
+    // Fall through case.
+    return null;
+  } // parseLocation
+
+  // --------------------------------------------------------------------------
+  /**
+   * Attempt to parse a double value from args.get(index).
+   * 
+   * @param args the command line arguments in a List<>.
+   * @param index the index into args.
    * @return the parsed double value, or null on error.
    */
-  protected Double parseDouble(String[] args, int index)
+  protected static Double parseDouble(ArrayList<String> args, int index)
   {
-    if (index >= 0 && index < args.length)
+    if (index >= 0 && index < args.size())
     {
       try
       {
-        return Double.parseDouble(args[index]);
+        return Double.parseDouble(args.get(index));
       }
       catch (Exception ex)
       {
@@ -432,67 +644,176 @@ public class Commands
 
   // --------------------------------------------------------------------------
   /**
-   * Parse an x, y, z Location out of the command line arguments.
+   * Parse a volume from the command line arguments and return a Volume
+   * instance, or null on error.
    * 
-   * @param args the command line arguments array as passed to the subcommand.
-   * @param index the index of the x coordinate in args; y and z should follow.
-   * @param world the world where the coordinates apply.
-   * @return the parsed Location or null on error.
+   * Valid argument syntax:
+   * 
+   * <pre>
+   * sphere here radius
+   * sphere [world] x y z radius
+   * box [world] x1 y1 z1 x2 y2 z2
+   * </pre>
+   * 
+   * @param sender the command sender. If the command sender has a Location,
+   *          this may be used when required.
+   * @param args the command line arguments, starting at the first keyword that
+   *          introduces a volume description, possibly containing arguments
+   *          after the description.
+   * @return the corresponding Volume, or null on error. If a non-null Volume is
+   *         returned, args will have all all volume parameters removed. If the
+   *         the specified volume is invalid (null), all bets are off and args
+   *         shouldn't be used again.
    */
-  protected Location parseLocation(String[] args, int index, World world)
+  protected static Volume parseVolume(ArrayList<String> args, CommandSender sender)
   {
     try
     {
-      double x = Double.parseDouble(args[index]);
-      double y = Double.parseDouble(args[index + 1]);
-      double z = Double.parseDouble(args[index + 2]);
-      return new Location(world, x, y, z);
+      if (args.size() >= 3 && args.get(0).equals("sphere"))
+      {
+        // /doppel coords sphere here radius [name]
+        args.remove(0);
+        if (args.get(0).equals("here"))
+        {
+          args.remove(0);
+          Location senderLoc = getLocation(sender);
+          if (senderLoc == null)
+          {
+            sender.sendMessage(_failureColour + "This command cannot be run from the console.");
+            return null;
+          }
+
+          Double radius = parseDouble(args, 0);
+          if (radius == null || radius < 0)
+          {
+            sender.sendMessage(_failureColour + "Invalid radius specified.");
+            return null;
+          }
+
+          args.remove(0);
+          return new Volume.Sphere(senderLoc, radius);
+        }
+        else
+        {
+          // sphere [world] x y z radius
+          World world = parseWorld(args, sender);
+          if (world == null)
+          {
+            sender.sendMessage(_failureColour + "You must specify the world.");
+            return null;
+          }
+
+          // If we can parse coordinates and radius then we have *enough*
+          // arguments of the correct types.
+          Location centre = parseCoordinates(args, world);
+          if (centre == null)
+          {
+            sender.sendMessage(_failureColour + "Invalid coordinates specified.");
+            return null;
+          }
+
+          Double radius = parseDouble(args, 0);
+          if (radius == null || radius < 0)
+          {
+            sender.sendMessage(_failureColour + "Invalid radius specified.");
+            return null;
+          }
+          else
+          {
+            args.remove(0);
+          }
+          return new Volume.Sphere(centre, radius);
+        }
+      }
+      else if (args.size() >= 7 && args.get(0).equals("box"))
+      {
+        // box [world] x1 y1 z1 x2 y2 z2
+        World world = parseWorld(args, sender);
+        if (world == null)
+        {
+          sender.sendMessage(_failureColour + "You must specify the world.");
+          return null;
+        }
+
+        Location loc1 = parseCoordinates(args, world);
+        if (loc1 == null)
+        {
+          sender.sendMessage(_failureColour + "Invalid first point specified.");
+          return null;
+        }
+
+        Location loc2 = parseCoordinates(args, world);
+        if (loc2 == null)
+        {
+          sender.sendMessage(_failureColour + "Invalid second point specified.");
+          return null;
+        }
+
+        // Box deals with loc1 > loc2 by sorting/swapping the coords.
+        return new Volume.Box(loc1, loc2);
+      }
     }
     catch (Exception ex)
     {
-      // May get here from ArrayIndexOutOfBoundsException,
-      // NumberFormatException, etc.
-      // Silent.
     }
     return null;
-  }
+  } // parseVolume
 
   // --------------------------------------------------------------------------
   /**
-   * Return a list of all LivingEntity instances with the specified visible
-   * custom name within the specified radius of the centre location.
+   * Format a message about the shape of the volume, the number of matching
+   * doppelgangers in it and what will happen to them.
    * 
-   * I tried setting the name "<anonymous>" when spawning escorts, but not
-   * showing the name. The client still shows it when at very short range and
-   * for certain view angles only. The name "." is less noticeable, but still
-   * noticeable enough that using a hidden custom name is not a viable way of
-   * marking Doppelganger-spawned mobs.
-   * 
-   * @param name the custom name, which must be visible; if this is null, any
-   *          name will do.
-   * @param centre the centre of the searched sphere.
-   * @param radius the radius of the searched sphere.
-   * @return a list of the matching LivingEntity instances.
+   * @param volume the Volume.
+   * @param messageStart the start of the message.
+   * @param doppelgangerCount the number of matching doppelgangers found in the
+   *          Volume.
    */
-  protected ArrayList<LivingEntity> findDoppelgangers(String name, Location centre, double radius)
+  protected static String formatVolumeMessage(Volume volume, String messageStart, int doppelgangerCount)
   {
-    double radiusSquared = radius * radius;
-    ArrayList<LivingEntity> doppelgangers = new ArrayList<LivingEntity>();
-    for (LivingEntity living : centre.getWorld().getLivingEntities())
+    if (volume instanceof Volume.Sphere)
     {
-      if (living.isCustomNameVisible() &&
-          (name == null || name.equals(living.getCustomName())) &&
-          living.getLocation().distanceSquared(centre) < radiusSquared)
+      Volume.Sphere sphere = (Volume.Sphere) volume;
+      double radius = sphere.getRadius();
+      if (radius > 1e9)
       {
-        doppelgangers.add(living);
+        return String.format("%s %d matching doppelgangers loaded in this world.",
+          messageStart, doppelgangerCount);
+      }
+      else
+      {
+        Location centre = sphere.getCentre();
+        return String.format("%s %d matching doppelgangers loaded within %5g blocks of (%d, %d, %d) in %s.",
+          messageStart, doppelgangerCount, radius, centre.getBlockX(), centre.getBlockY(), centre.getBlockZ(),
+          centre.getWorld().getName());
       }
     }
-    return doppelgangers;
-  }
+    else
+    {
+      // Box is currently the only other option.
+      return String.format("%s %d matching doppelgangers loaded in the specified box.",
+        messageStart, doppelgangerCount);
+    }
+  } // formatVolumeMessage
 
   // --------------------------------------------------------------------------
+  /**
+   * Default colour of messages on success.
+   */
+  protected static final ChatColor _successColour = ChatColor.GOLD;
+
+  /**
+   * Default colour of messages on failure.
+   */
+  protected static final ChatColor _failureColour = ChatColor.DARK_RED;
+
   /**
    * Reference to the Doppelganger plugin.
    */
-  protected Doppelganger _plugin;
+  protected Doppelganger           _plugin;
+
+  /**
+   * Handles help messages.
+   */
+  protected Help                   _help;
 } // class Commands

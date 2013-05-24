@@ -67,8 +67,13 @@ public class CreatureFactory
    */
   public void load(ConfigurationSection root, Logger logger)
   {
-    ConfigurationSection shapesSection = root.getConfigurationSection("shapes");
+    // Wipe out the old configuration if previously loaded.
     _shapes.clear();
+    _types.clear();
+    _playerCreatures.clear();
+    _playerShapes.clear();
+
+    ConfigurationSection shapesSection = root.getConfigurationSection("shapes");
     for (String shapeName : shapesSection.getKeys(false))
     {
       if (getCreatureShape(shapeName) != null)
@@ -84,7 +89,6 @@ public class CreatureFactory
     }
 
     ConfigurationSection creaturesSection = root.getConfigurationSection("creatures");
-    _types.clear();
     for (String creatureName : creaturesSection.getKeys(false))
     {
       if (isValidCreatureType(creatureName))
@@ -113,8 +117,6 @@ public class CreatureFactory
     } // for
 
     ConfigurationSection playersSection = root.getConfigurationSection("players");
-    _playerCreatures.clear();
-    _playerShapes.clear();
     for (String playerName : playersSection.getKeys(false))
     {
       if (getPlayerCreature(playerName) != null)
@@ -176,7 +178,7 @@ public class CreatureFactory
   public void listConfiguration(CommandSender sender)
   {
     StringBuilder message = new StringBuilder();
-    message.append(ChatColor.YELLOW);
+    message.append(ChatColor.GOLD);
     message.append("Shapes:");
     message.append(ChatColor.YELLOW);
     for (CreatureShape shape : _shapes.values())
@@ -187,7 +189,7 @@ public class CreatureFactory
     sender.sendMessage(message.toString());
 
     message.setLength(0);
-    message.append(ChatColor.YELLOW);
+    message.append(ChatColor.GOLD);
     message.append("Creatures:");
     message.append(ChatColor.YELLOW);
     for (CreatureType creature : _types.values())
@@ -198,7 +200,7 @@ public class CreatureFactory
     sender.sendMessage(message.toString());
 
     message.setLength(0);
-    message.append(ChatColor.YELLOW);
+    message.append(ChatColor.GOLD);
     message.append("Players:");
     message.append(ChatColor.YELLOW);
     for (String player : _playerCreatures.keySet())
