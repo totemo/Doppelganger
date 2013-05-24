@@ -184,6 +184,10 @@ creatures:
     spawn: Witch
     mount: InvisibleBat
 
+  CaveSpiderWitch:
+    spawn: Witch
+    mount: CaveSpider
+
   InvisibleBlaze:
     spawn: Blaze
     potions:
@@ -289,7 +293,7 @@ creatures:
       - weight: 1.0
         spawn: FlyingWitch
       - weight: 1.0
-        spawn: CaveSpiderRider
+        spawn: CaveSpiderWitch
 
   Dinnerbone:
     health: 80
