@@ -485,7 +485,7 @@ help:
           - ""
         at:
           usage:
-          - "&r&f/&6doppel spawn at &f[&d&oworld&f] &a&ox y z &&d&otype f[&d&oname&f]"
+          - "&r&f/&6doppel spawn at &f[&d&oworld&f] &a&ox y z &d&otype &f[&d&oname&f]"
           description:
           - "&r&f    Spawn a doppelganger of the specified type, at the specified location, with optional name."
           - ""
