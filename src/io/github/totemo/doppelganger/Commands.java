@@ -156,7 +156,8 @@ public class Commands
         }
         else
         {
-          sender.sendMessage(_successColour + "Player " + name + " will spawn a creature of type " + creature + ".");
+          sender.sendMessage(_successColour + "Player " + name +
+                             " will spawn a creature of type: " + ChatColor.YELLOW + creature);
           ArrayList<CreatureShape> shapes = _plugin.getCreatureFactory().getPlayerShapes(name);
           if (shapes.size() == 0)
           {
@@ -169,6 +170,7 @@ public class Commands
             message.append(_successColour);
             message.append(name);
             message.append(" can be spawned by the following shapes:");
+            message.append(ChatColor.YELLOW);
             for (CreatureShape shape : shapes)
             {
               message.append(' ');

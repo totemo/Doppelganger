@@ -292,13 +292,14 @@ public class CreatureShape
    */
   public void describe(CommandSender sender)
   {
-    sender.sendMessage(ChatColor.YELLOW + "Shape " + getName() + ":");
-    sender.sendMessage(ChatColor.YELLOW + "    Enabled: " + isEnabled());
-    sender.sendMessage(ChatColor.YELLOW + "    Head material: " + Material.getMaterial(getTriggerMaterialId()).toString());
-    sender.sendMessage(ChatColor.YELLOW + "    Y offset to ground: " + getGroundOffset());
+    sender.sendMessage(ChatColor.GOLD + "Shape " + getName() + ":");
+    sender.sendMessage(ChatColor.GOLD + "    Enabled: " + ChatColor.YELLOW + isEnabled());
+    sender.sendMessage(ChatColor.GOLD + "    Head material: " + ChatColor.YELLOW
+                       + Material.getMaterial(getTriggerMaterialId()).toString());
+    sender.sendMessage(ChatColor.GOLD + "    Y offset to ground: " + ChatColor.YELLOW + getGroundOffset());
     if (_materialIds.size() != 0)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Body: ");
+      sender.sendMessage(ChatColor.GOLD + "    Body: ");
     }
     for (int i = 0; i < _materialIds.size(); ++i)
     {
@@ -309,7 +310,7 @@ public class CreatureShape
 
     if (!_types.entrySet().isEmpty())
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Summoning probabilities: ");
+      sender.sendMessage(ChatColor.GOLD + "    Summoning probabilities: ");
       double lastWeight = 0.0;
       for (Entry<Double, String> summon : _types.entrySet())
       {

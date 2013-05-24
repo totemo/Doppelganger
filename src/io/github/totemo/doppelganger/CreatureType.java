@@ -292,33 +292,33 @@ public class CreatureType
    */
   public void describe(CommandSender sender)
   {
-    sender.sendMessage(ChatColor.YELLOW + "Creature " + getName() + ":");
-    sender.sendMessage(ChatColor.YELLOW + "    Spawn: " + getCreatureType());
-    sender.sendMessage(ChatColor.YELLOW + "    Health: " + _health + " half hearts");
-    sender.sendMessage(ChatColor.YELLOW + "    Air: " + _air + " ticks");
-    sender.sendMessage(ChatColor.YELLOW + "    Can despawn: " + _despawns);
+    sender.sendMessage(ChatColor.GOLD + "Creature " + ChatColor.YELLOW + getName() + ":");
+    sender.sendMessage(ChatColor.GOLD + "    Spawn: " + ChatColor.YELLOW + getCreatureType());
+    sender.sendMessage(ChatColor.GOLD + "    Health: " + ChatColor.YELLOW + _health + " half hearts");
+    sender.sendMessage(ChatColor.GOLD + "    Air: " + ChatColor.YELLOW + _air + " ticks");
+    sender.sendMessage(ChatColor.GOLD + "    Can despawn: " + ChatColor.YELLOW + _despawns);
     if (getMount().length() != 0)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Mount: " + getMount());
+      sender.sendMessage(ChatColor.GOLD + "    Mount: " + ChatColor.YELLOW + getMount());
     }
     if (getMask() != null)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Mask: " + getMask());
+      sender.sendMessage(ChatColor.GOLD + "    Mask: " + ChatColor.YELLOW + getMask());
     }
     if (_sound != null)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Spawn sound: " + _sound.toString());
+      sender.sendMessage(ChatColor.GOLD + "    Spawn sound: " + ChatColor.YELLOW + _sound.toString());
     }
     if (_maxStrikes > 0)
     {
       sender.sendMessage(String.format(
-        "%s    Spawn lighting: %d to %d strikes, between %.2f and %.2f blocks away, for %d ticks",
-        ChatColor.YELLOW, _minStrikes, _maxStrikes, _minStrikeRange, _maxStrikeRange, _strikeDuration));
+        "%s    Spawn lighting: %s%d to %d strikes, between %.2f and %.2f blocks away, for %d ticks",
+        ChatColor.GOLD, ChatColor.YELLOW, _minStrikes, _maxStrikes, _minStrikeRange, _maxStrikeRange, _strikeDuration));
     }
 
     if (_potions.size() != 0)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Potion effects: ");
+      sender.sendMessage(ChatColor.GOLD + "    Potion effects: ");
       for (PotionEffect effect : _potions)
       {
         String ambient = effect.isAmbient() ? " (ambient)" : "";
@@ -329,35 +329,40 @@ public class CreatureType
 
     if (_helmet != null)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Helmet: " + getItemDescription(_helmet));
+      sender.sendMessage(ChatColor.GOLD + "    Helmet: " + ChatColor.YELLOW + getItemDescription(_helmet));
     }
     // Show drop chance for helmet (head) regardless.
-    sender.sendMessage(String.format("%s    Helmet drop chance: %.2f%%", ChatColor.YELLOW, 100 * _helmetDropChance));
+    sender.sendMessage(String.format("%s    Helmet drop chance: %s%.2f%%",
+      ChatColor.GOLD, ChatColor.YELLOW, 100 * _helmetDropChance));
     if (_chestPlate != null)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Chest plate: " + getItemDescription(_chestPlate));
-      sender.sendMessage(String.format("%s    Chest plate drop chance: %.2f%%", ChatColor.YELLOW, 100 * _chestPlateDropChance));
+      sender.sendMessage(ChatColor.GOLD + "    Chest plate: " + getItemDescription(_chestPlate));
+      sender.sendMessage(String.format("%s    Chest plate drop chance: %s%.2f%%",
+        ChatColor.GOLD, ChatColor.YELLOW, 100 * _chestPlateDropChance));
     }
     if (_leggings != null)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Leggings: " + getItemDescription(_leggings));
-      sender.sendMessage(String.format("%s    Leggings drop chance: %.2f%%", ChatColor.YELLOW, 100 * _leggingsDropChance));
+      sender.sendMessage(ChatColor.GOLD + "    Leggings: " + getItemDescription(_leggings));
+      sender.sendMessage(String.format("%s    Leggings drop chance: %s%.2f%%",
+        ChatColor.GOLD, ChatColor.YELLOW, 100 * _leggingsDropChance));
     }
     if (_boots != null)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Boots: " + getItemDescription(_boots));
-      sender.sendMessage(String.format("%s    Boots drop chance: %.2f%%", ChatColor.YELLOW, 100 * _bootsDropChance));
+      sender.sendMessage(ChatColor.GOLD + "    Boots: " + getItemDescription(_boots));
+      sender.sendMessage(String.format("%s    Boots drop chance: %s%.2f%%",
+        ChatColor.GOLD, ChatColor.YELLOW, 100 * _bootsDropChance));
     }
     if (_weapon != null)
     {
-      sender.sendMessage(ChatColor.YELLOW + "    Weapon: " + getItemDescription(_weapon));
-      sender.sendMessage(String.format("%s    Weapon drop chance: %.2f%%", ChatColor.YELLOW, 100 * _weaponDropChance));
+      sender.sendMessage(ChatColor.GOLD + "    Weapon: " + getItemDescription(_weapon));
+      sender.sendMessage(String.format("%s    Weapon drop chance: %s%.2f%%",
+        ChatColor.GOLD, ChatColor.YELLOW, 100 * _weaponDropChance));
     }
     if (_maxEscorts > 0)
     {
       sender.sendMessage(String.format(
         "%s    Spawn between %d and %d escort creatures, between %.2f and %.2f blocks away, for %d ticks, of the following types:",
-        ChatColor.YELLOW, _minEscorts, _maxEscorts, _minEscortRange, _maxEscortRange, _strikeDuration));
+        ChatColor.GOLD, _minEscorts, _maxEscorts, _minEscortRange, _maxEscortRange, _strikeDuration));
       if (!_escortTypes.entrySet().isEmpty())
       {
         double lastWeight = 0.0;
