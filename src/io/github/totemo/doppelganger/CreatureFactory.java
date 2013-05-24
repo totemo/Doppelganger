@@ -74,98 +74,108 @@ public class CreatureFactory
     _playerShapes.clear();
 
     ConfigurationSection shapesSection = root.getConfigurationSection("shapes");
-    for (String shapeName : shapesSection.getKeys(false))
+    if (shapesSection != null)
     {
-      if (getCreatureShape(shapeName) != null)
+      for (String shapeName : shapesSection.getKeys(false))
       {
-        logger.warning("A shape called " + shapeName + " already exists and can't be redefined.");
-      }
-      else
-      {
-        CreatureShape shape = CreatureShape.loadFromSection(shapesSection.getConfigurationSection(shapeName), logger);
-        _shapes.put(shapeName.toLowerCase(), shape);
-        // shape.dump(_plugin.getLogger());
+        if (getCreatureShape(shapeName) != null)
+        {
+          logger.warning("A shape called " + shapeName + " already exists and can't be redefined.");
+        }
+        else
+        {
+          CreatureShape shape = CreatureShape.loadFromSection(shapesSection.getConfigurationSection(shapeName), logger);
+          _shapes.put(shapeName.toLowerCase(), shape);
+          // shape.dump(_plugin.getLogger());
+        }
       }
     }
 
     ConfigurationSection creaturesSection = root.getConfigurationSection("creatures");
-    for (String creatureName : creaturesSection.getKeys(false))
+    if (creaturesSection != null)
     {
-      if (isValidCreatureType(creatureName))
+      for (String creatureName : creaturesSection.getKeys(false))
       {
-        // Prevent (inadvertent) redefinition of types.
-        logger.warning("A creature called " + creatureName + " already exists and can't be redefined.");
-      }
-      else
-      {
-        CreatureType type = CreatureType.loadFromSection(creaturesSection.getConfigurationSection(creatureName), logger);
-        if (creatureName.equals(type.getCreatureType()))
+        if (isValidCreatureType(creatureName))
         {
-          // Prevent infinite recursion in spawnCreature().
-          logger.warning("Creature " + creatureName + " cannot be defined in terms of itself.");
-        }
-        else if (isValidCreatureType(type.getCreatureType()))
-        {
-          _types.put(creatureName.toLowerCase(), type);
+          // Prevent (inadvertent) redefinition of types.
+          logger.warning("A creature called " + creatureName + " already exists and can't be redefined.");
         }
         else
         {
-          logger.warning("Can't define creature " + type.getName() +
-                         " because we can't spawn a " + type.getCreatureType());
-        }
-      }
-    } // for
-
-    ConfigurationSection playersSection = root.getConfigurationSection("players");
-    for (String playerName : playersSection.getKeys(false))
-    {
-      if (getPlayerCreature(playerName) != null)
-      {
-        logger.warning("A player creature called " + playerName + " already exists and can't be redefined.");
-      }
-      else
-      {
-        ConfigurationSection player = playersSection.getConfigurationSection(playerName);
-
-        // If a specific creature type to spawn is not specified, it defaults to
-        // a type with the same name as the player (if that exists).
-        String spawn = player.getString("spawn", playerName);
-        if (!isValidCreatureType(spawn))
-        {
-          logger.warning("Can't define player " + playerName +
-                         " because there is no creature type named " + spawn);
-        }
-        else
-        {
-          List<String> shapeNameList = player.getStringList("shapes");
-          ArrayList<CreatureShape> shapes = new ArrayList<CreatureShape>();
-          if (shapeNameList != null)
+          CreatureType type = CreatureType.loadFromSection(creaturesSection.getConfigurationSection(creatureName), logger);
+          if (creatureName.equals(type.getCreatureType()))
           {
-            for (String shapeName : shapeNameList)
-            {
-              CreatureShape shape = getCreatureShape(shapeName);
-              if (shape == null)
-              {
-                logger.warning("Player " + playerName +
-                               " references undefined shape " + shapeName);
-              }
-              else
-              {
-                shapes.add(shape);
-              }
-            } // for
-
-            if (shapes.size() == 0)
-            {
-              logger.warning("Player " + playerName +
-                             " can only be spawned by command because no shapes have been listed.");
-            }
-            _playerShapes.put(playerName, shapes);
-            _playerCreatures.put(playerName, spawn);
+            // Prevent infinite recursion in spawnCreature().
+            logger.warning("Creature " + creatureName + " cannot be defined in terms of itself.");
+          }
+          else if (isValidCreatureType(type.getCreatureType()))
+          {
+            _types.put(creatureName.toLowerCase(), type);
+          }
+          else
+          {
+            logger.warning("Can't define creature " + type.getName() +
+                           " because we can't spawn a " + type.getCreatureType());
           }
         }
-      } // if defining
-    } // for
+      } // for
+    }
+
+    ConfigurationSection playersSection = root.getConfigurationSection("players");
+    if (playersSection != null)
+    {
+      for (String playerName : playersSection.getKeys(false))
+      {
+        if (getPlayerCreature(playerName) != null)
+        {
+          logger.warning("A player creature called " + playerName + " already exists and can't be redefined.");
+        }
+        else
+        {
+          ConfigurationSection player = playersSection.getConfigurationSection(playerName);
+
+          // If a specific creature type to spawn is not specified, it defaults
+          // to
+          // a type with the same name as the player (if that exists).
+          String spawn = player.getString("spawn", playerName);
+          if (!isValidCreatureType(spawn))
+          {
+            logger.warning("Can't define player " + playerName +
+                           " because there is no creature type named " + spawn);
+          }
+          else
+          {
+            List<String> shapeNameList = player.getStringList("shapes");
+            ArrayList<CreatureShape> shapes = new ArrayList<CreatureShape>();
+            if (shapeNameList != null)
+            {
+              for (String shapeName : shapeNameList)
+              {
+                CreatureShape shape = getCreatureShape(shapeName);
+                if (shape == null)
+                {
+                  logger.warning("Player " + playerName +
+                                 " references undefined shape " + shapeName);
+                }
+                else
+                {
+                  shapes.add(shape);
+                }
+              } // for
+
+              if (shapes.size() == 0)
+              {
+                logger.warning("Player " + playerName +
+                               " can only be spawned by command because no shapes have been listed.");
+              }
+              _playerShapes.put(playerName, shapes);
+              _playerCreatures.put(playerName, spawn);
+            }
+          }
+        } // if defining
+      } // for
+    }
   } // load
 
   // --------------------------------------------------------------------------

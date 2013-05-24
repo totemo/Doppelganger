@@ -1,0 +1,530 @@
+allow_arbitrary_names: false
+
+shapes:
+  diamond_t_ns:
+    enabled: true
+    head: skull_item
+    body:
+    - material: diamond_block
+      offset: [0, -1, -1]
+    - material: diamond_block
+      offset: [0, -1, 1]
+    - material: diamond_block
+      offset: [0, -1, 0]
+    - material: diamond_block
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: ToughWitherSkeleton
+
+  diamond_t_ew:
+    head: skull_item
+    body:
+    - material: diamond_block
+      offset: [-1, -1, 0]
+    - material: diamond_block
+      offset: [1, -1, 0]
+    - material: diamond_block
+      offset: [0, -1, 0]
+    - material: diamond_block
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: ToughWitherSkeleton
+
+  diamond_2pillar:
+    head: pumpkin
+    body:
+    - material: diamond_block
+      offset: [0, -1, 0]
+    - material: diamond_block
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: ToughWitherSkeleton
+
+  gold_diamond_2pillar:
+    head: pumpkin
+    body:
+    - material: gold_block
+      offset: [0, -1, 0]
+    - material: diamond_block
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: ToughPigZombie
+
+  pumpkin:
+    head: pumpkin
+    summon:
+    - weight: 1.0
+      spawn: SpecialBat
+    - weight: 1.0
+      spawn: FlyingPig
+    - weight: 1.0
+      spawn: FlyingSquid
+
+creatures:
+  SpecialBat:
+    spawn: Bat
+    sound: ambience_cave
+
+  ToughWitherSkeleton:
+    spawn: WitherSkeleton
+    sound: wither_spawn
+    lightning:
+      min: 1
+    despawns: false
+    health: 100
+    air: 72000
+    potions:
+    - type: fire_resistance
+    - type: damage_resistance
+    - type: speed
+    - type: regeneration
+    - type: increase_damage
+      amplifier: 2
+    chestplate:
+      item: diamond_chestplate
+      damage: 3
+      dropchance: 0.0
+    leggings:
+      item: diamond_leggings
+      damage: 3
+      dropchance: 0.0
+    weapon:
+      item: diamond_sword
+
+  ToughSkeleton:
+    spawn: Skeleton
+    sound: wither_spawn
+    lightning:
+      min: 1
+    despawns: false
+    health: 100
+    air: 72000
+    potions:
+    - type: fire_resistance
+    - type: damage_resistance
+    - type: speed
+    - type: regeneration
+    - type: increase_damage
+      amplifier: 2
+    chestplate:
+      item: diamond_chestplate
+      damage: 3
+      dropchance: 0.0
+    weapon:
+      item: diamond_sword
+
+  ToughPigZombie:
+    spawn: PigZombie
+    sound: wither_spawn
+    lightning:
+      min: 1
+    despawns: false
+    health: 100
+    air: 72000
+    potions:
+    - type: fire_resistance
+    - type: damage_resistance
+    - type: speed
+    - type: regeneration
+    - type: increase_damage
+      amplifier: 2
+    helmet:
+      item: skull_item
+      dropchance: 1.0
+    weapon:
+      item: diamond_sword
+
+  MolonMan:
+    spawn: Skeleton
+    sound: ambience_cave
+    helmet:
+      item: melon_block
+    weapon:
+      item: stone_sword
+      dropchance: 0.01
+
+  MolonMan2:
+    spawn: Skeleton
+    sound: ambience_cave
+    helmet:
+      item: melon_block
+    chestplate:
+      item: iron_chestplate
+    weapon:
+      item: iron_sword
+      dropchance: 0.01
+
+  InvisibleBat:
+    spawn: Bat
+    sound: wither_spawn
+    potions:
+    - type: invisibility
+      ambient: false
+
+  FlyingPig:
+    spawn: Pig
+    mount: InvisibleBat
+    sound: pig_death
+
+  FlyingSquid:
+    spawn: Squid
+    mount: InvisibleBat
+    sound: swim
+    air: 72000
+        
+  FlyingSaddledPig:
+    spawn: SaddledPig
+    mount: InvisibleBat
+
+  FlyingWitch:
+    spawn: Witch
+    mount: InvisibleBat
+
+  InvisibleBlaze:
+    spawn: Blaze
+    potions:
+    - type: invisibility
+      ambient: false
+    
+  FlyingSkull:
+    spawn: Skeleton
+    despawns: false
+    health: 40
+    mount: InvisibleBlaze
+    potions:
+    - type: invisibility
+    - type: fire_resistance
+    helmet: 
+      item: skull_item
+      dropchance: 0.0
+    weapon:
+      item: bow
+      enchantments:
+      - type: arrow_damage
+        level: 5
+      - type: arrow_fire
+        level: 1
+
+  Notch:
+    health: 80
+    air: 72000
+    spawn: ToughWitherSkeleton
+    despawns: false
+    lightning:
+      min: 4
+      max: 7
+    sound: wither_spawn
+    helmet:
+      item: skull_item
+      dropchance: 1.0
+    chestplate:
+      item: diamond_chestplate
+      damage: 3
+      dropchance: 0.01
+      enchantments:
+      - type: protection_environmental
+        level: 4
+    leggings: 
+      item: diamond_leggings
+      damage: 3
+      dropchance: 0.0
+      enchantments:
+      - type: protection_environmental
+        level: 4
+    weapon:
+      item: diamond_sword
+      damage: 50
+      dropchance: 0.05
+      enchantments:
+      - type: damage_all
+        level: 5
+      - type: fire_aspect
+        level: 2
+    escorts:
+      min: 3
+      max: 8
+      minrange: 1.0
+      maxrange: 5.0
+      summon:
+      - weight: 1.0
+        spawn: FlyingSkull
+
+  jeb_:
+    health: 60
+    air: 72000
+    spawn: ToughSkeleton
+    despawns: false
+    mount: FlyingSaddledPig
+    lightning:
+      min: 4
+      max: 7
+      minrange: 1.0
+      maxrange: 5.0
+      duration: 30
+    helmet:
+      item: skull_item
+      dropchance: 1.0
+    chestplate:
+      item: diamond_chestplate
+      damage: 3
+      dropchance: 0.0
+      enchantments:
+      - type: protection_environmental
+        level: 4
+    weapon:
+      item: diamond_sword
+      dropchance: 0.05
+    escorts:
+      min: 3
+      max: 8
+      minrange: 1.0
+      maxrange: 5.0
+      summon:
+      - weight: 1.0
+        spawn: FlyingPig
+      - weight: 1.0
+        spawn: FlyingWitch
+      - weight: 1.0
+        spawn: CaveSpiderRider
+
+  Dinnerbone:
+    health: 80
+    spawn: ToughSkeleton
+    despawns: false
+    lightning:
+      min: 4
+      max: 7
+      minrange: 1.0
+      maxrange: 5.0
+      duration: 30
+    helmet:
+      item: skull_item
+      dropchance: 1.0
+    weapon:
+      dropchance: 0.05
+      item: diamond_sword
+      enchantments:
+      - type: knockback
+        level: 2
+      - type: fire_aspect
+        level: 2
+      - type: damage_all
+        level: 5
+    escorts:
+      min: 3
+      max: 8
+      minrange: 1.0
+      maxrange: 5.0
+      summon:
+      - weight: 1.0
+        spawn: ToughSkeleton
+
+  Villain:
+    health: 100
+    spawn: ToughWitherSkeleton
+    despawns: false
+    mask: Ooer
+    lightning:
+      min: 4
+      max: 12
+      minrange: 2.0
+      maxrange: 10.0
+      duration: 100
+    helmet:
+      item: skull_item
+      dropchance: 0.5
+    weapon:
+      dropchance: 0.05
+      item: diamond_sword
+      enchantments:
+      - type: knockback
+        level: 2
+      - type: fire_aspect
+        level: 2
+      - type: damage_all
+        level: 5
+    escorts:
+      min: 7
+      max: 12
+      minrange: 2.0
+      maxrange: 20.0
+      duration: 100
+      summon:
+      - weight: 1.0
+        spawn: MolonMan
+      - weight: 0.5
+        spawn: MolonMan2
+      - weight: 0.5
+        spawn: Bat
+
+        
+players:
+  Notch:
+    spawn: Notch
+    shapes:
+    - diamond_t_ns
+    - diamond_t_ew
+        
+  jeb_:
+    shapes:
+    - diamond_t_ns
+    - diamond_t_ew
+
+  Dinnerbone:
+    shapes:
+    - diamond_t_ns
+    - diamond_t_ew
+
+  Villain:
+    shapes:
+    - diamond_2pillar
+    
+help:
+  topic:
+    help:
+      variant:
+        1:
+          usage: 
+          - "&r&f/&6doppel help &f[&6reload&f|&6info&f|&6coords&f|&6kill&f|&6spawn&f|&6maintain&f]"
+          description:
+          - "&r&f    Show descriptions of &6/doppel &fsubcommands."
+          - ""
+
+    reload:
+      variant:
+        1:
+          usage: 
+          - "&r&f/&6doppel reload"
+          description: 
+          - "&r&f    Reload the Doppelganger configuration."
+          - ""
+
+    info:
+      header: 
+      - "&r&eAlternatives: "
+      variant:
+        list:
+          usage: 
+          - "&r&f/&6doppel info list"
+          description: 
+          - "&r&f    List the names of all shapes, creatures and summonable players."
+          - ""
+        shape:
+          usage: 
+          - "&r&f/&6doppel info shape &d&oname"
+          description: 
+          - "&r&f    Describe the named shape."
+          - ""
+        creature:
+          usage: 
+          - "&r&f/&6doppel info creature &d&oname"
+          description: 
+          - "&r&f    Describe the named creature type."
+          - ""
+        player:
+          usage: 
+          - "&r&f/&6doppel info player &d&oname"
+          description: 
+          - "&r&f    Describe the named summonable player."
+          - ""
+
+    coords:
+      header:
+      - "&r&eAlternatives: "
+      footer:
+      - "&r&eThe world name defaults to that of the player or command block if omitted."
+      variant:
+        sphere_here:
+          usage:
+          - "&r&f/&6doppel coords sphere here &a&oradius &f[&d&oname&f]"
+          description:
+          - "&r    &fList coordinates of doppelgangers with the specified name in a sphere around the player or command block."
+          - ""
+          
+        sphere:
+          usage:
+          - "&r&f/&6doppel coords sphere &f[&d&oworld&f] &a&ox y z radius &f[&d&oname&f]"
+          description:
+          - "&r    &fList coordinates of doppelgangers with the specified name in a sphere."
+          - ""
+          
+        box:
+          usage:
+          - "&r&f/&6doppel coords box &f[&d&oworld&f] &a&ox1 y1 z1 x2 y2 z2 &f[&d&oname&f]"
+          description:
+          - "&r    &fList coordinates of doppelgangers with the specified name in a box (x1,y1,z1) - (x2,y2,z2)."
+          - ""
+    
+    kill:
+      header:
+      - "&r&eAlternatives: "
+      footer:
+      - "&r&eThe world name defaults to that of the player or command block if omitted."
+      variant:
+        sphere_here:
+          usage:
+          - "&r&f/&6doppel kill sphere here &a&oradius &d&oname"
+          description:
+          - "&r    &fKill all doppelgangers with the specified name in a sphere around the player or command block."
+          - ""
+          
+        sphere:
+          usage:
+          - "&r&f/&6doppel kill sphere &f[&d&oworld&f] &a&ox y z radius &d&oname"
+          description:
+          - "&r    &fKill all doppelgangers with the specified name in a sphere."
+          - ""
+          
+        box:
+          usage:
+          - "&r&f/&6doppel kill box &f[&d&oworld&f] &a&ox1 y1 z1 x2 y2 z2 &d&oname"
+          description:
+          - "&r    &fKill all doppelgangers with the specified name in a box (x1,y1,z1) - (x2,y2,z2)."
+          - ""
+
+    spawn:
+      header:
+      - "&r&eAlternatives: "
+      footer:
+      - "&r&eNote:"
+      - "&r&e* Anonymous doppelgangers cannot be found or killed by commands."
+      - "&r&e* The world name defaults to that of the player or command block if omitted."
+      variant:
+        here:
+          usage:
+          - "&r&f/&6doppel spawn here &d&otype &f[&d&oname&f]"
+          description:
+          - "&r&f    Spawn a doppelganger of the specified type, with optional name at the location of the player or command block issuing the command."
+          - ""
+        at:
+          usage:
+          - "&r&f/&6doppel spawn at &f[&d&oworld&f] &a&ox y z &d&otype &f[&d&oname&f]"
+          description:
+          - "&r&f    Spawn a doppelganger of the specified type, at the specified location, with optional name."
+          - ""
+
+    maintain:
+      header:
+      - "&r&eAlternatives: "
+      footer:
+      - "&r&eThe world name defaults to that of the player or command block if omitted."
+      variant:
+        box:
+          usage:
+          - "&r&f/&6doppel maintain at &f[&d&oworld&f] &a&ox y z &r&6box &f[&d&oworld&f] &a&ox1 y1 z1 x2 y2 z2 &d&otype name"
+          description:
+          - "&r    &fSpawn a doppelganger with the specified name and type at (x,y,z) in the named world if there are no doppelgangers with that name and type in the box (x1,y1,z1) - (x2,y2,z2). If there is more than one doppelganger with that name in the box, kill all but the oldest one."
+          - ""
+
+        sphere:
+          usage:
+          - "&r&f/&6doppel maintain at &f[&d&oworld&f] &a&ox y z &r&6sphere &f[&d&oworld&f] &a&oxc yc zc radius &d&otype name"
+          description:
+          - "&r    &fSpawn a doppelganger with the specified name and type at (x,y,z) in the named world if there are no doppelgangers with that name and type in the sphere whose centre is (xc,yc,zc).  If there is more than one doppelganger with that name in the sphere, kill all but the oldest one."
+          - ""
+
+
