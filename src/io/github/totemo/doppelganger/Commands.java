@@ -1,7 +1,7 @@
 package io.github.totemo.doppelganger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -281,10 +281,10 @@ public class Commands
   /**
    * Handle /doppel spawn:
    * 
-   * <pre>
-   * /doppel spawn here type [name]
-   * /doppel spawn at [world] x y z type [name]
-   * </pre>
+   * <ul>
+   * <li>/doppel spawn here type [name]</li>
+   * <li>/doppel spawn at [world] x y z type [name]</li>
+   * </ul>
    * 
    * @param sender the issuer of the command.
    * @param args command arguments after the initial /doppel.
@@ -312,9 +312,11 @@ public class Commands
   /**
    * Handle /doppel maintain:
    * 
-   * <pre>
-   * /doppel maintain at [world] x y z box [world] x1 y1 z1 x2 y2 z2 type name"
-   * /doppel maintain at [world] x y z sphere [world] xc yc zc radius type name"
+   * <ul>
+   * <li>/doppel maintain at [world] x y z box [world] x1 y1 z1 x2 y2 z2 type
+   * name</li>
+   * <li>/doppel maintain at [world] x y z sphere [world] xc yc zc radius type
+   * name</li>
    * </pre>
    * 
    * Technically, here is also allowed as a spawn location, but it's not much
@@ -409,7 +411,18 @@ public class Commands
   }
 
   // --------------------------------------------------------------------------
-
+  /**
+   * Spawn a doppelganger with the specified type and optional name at the
+   * Location.
+   * 
+   * Give feedback to the command sender and log successful spawns and
+   * unexpected failures.
+   * 
+   * @param sender the command sender.
+   * @param type the creature type name.
+   * @param name the name of the creature; if null, the creature is anonymous.
+   * @param loc the Location where the creature will spawn.
+   */
   protected void spawnAndLog(CommandSender sender, String type, String name, Location loc)
   {
     if (_plugin.getCreatureFactory().isValidCreatureType(type))
@@ -483,6 +496,10 @@ public class Commands
    * Return a list containing the tail of the args array, from startIndex
    * onwards.
    * 
+   * Exclude arguments that are just the empty string. They happen when a user
+   * inadvertently adds extra spaces in the command and are probably never
+   * actually desired.
+   * 
    * @param args an array of Strings.
    * @param startIndex the first element of args that will appear in the
    *          returned list; all previous elements of args are skipped.
@@ -491,7 +508,36 @@ public class Commands
    */
   protected static ArrayList<String> tail(String[] args, int startIndex)
   {
-    return new ArrayList<String>(Arrays.asList(Arrays.copyOfRange(args, startIndex, args.length)));
+    ArrayList<String> list = new ArrayList<String>();
+    for (int i = startIndex; i < args.length; ++i)
+    {
+      if (args[i].length() > 0)
+      {
+        list.add(args[i]);
+      }
+    }
+    return list;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Dump the current arguments list to the specified Logger for debugging.
+   * 
+   * @param logger the Logger.
+   * @param args the argument list.
+   */
+  protected static void dumpArgs(Logger logger, ArrayList<String> args)
+  {
+    StringBuilder message = new StringBuilder();
+    message.append("args (");
+    message.append(args.size());
+    message.append("):");
+    for (String arg : args)
+    {
+      message.append(' ');
+      message.append(arg);
+    }
+    logger.info(message.toString());
   }
 
   // --------------------------------------------------------------------------
@@ -730,6 +776,7 @@ public class Commands
       else if (args.size() >= 7 && args.get(0).equals("box"))
       {
         // box [world] x1 y1 z1 x2 y2 z2
+        args.remove(0);
         World world = parseWorld(args, sender);
         if (world == null)
         {
