@@ -53,65 +53,99 @@ public class CreatureType
    */
   public static CreatureType loadFromSection(ConfigurationSection section, Logger logger)
   {
-    String spawn = section.getString("spawn", "");
-    String mount = section.getString("mount", "");
-    String mask = section.getString("mask", null);
-    boolean despawns = section.getBoolean("despawns", true);
-    int health = Math.max(1, section.getInt("health", 20));
-    int air = Math.max(1, section.getInt("air", 20 * 60));
-    String soundName = section.getString("sound", "").toUpperCase();
-    Sound sound = null;
-    try
+    // The creature type to spawn is the only mandatory attribute. The caller
+    // (CreatureFactory) does additional sanity checks to verify that that the
+    // spawned creature type is valid.
+    String spawn = section.getString("spawn");
+    if (spawn == null || spawn.length() == 0)
     {
-      if (soundName.length() != 0)
+      logger.warning("Creature " + section.getName() + " can't be defined because it is missing a 'spawn' value.");
+      return null;
+    }
+    else
+    {
+      CreatureType type = new CreatureType(section.getName(), spawn);
+      type._mount = section.getString("mount", null);
+      type._mask = section.getString("mask", null);
+      if (section.isSet("despawns"))
       {
-        sound = Sound.valueOf(soundName);
+        type._despawns = section.getBoolean("despawns", false);
       }
-    }
-    catch (Exception ex)
-    {
-      logger.warning("Creature " + section.getName() + " has invalid sound " + soundName);
-    }
+      if (section.isSet("health"))
+      {
+        type._health = Math.max(1, section.getInt("health", 20));
+      }
+      if (section.isSet("air"))
+      {
+        type._air = Math.max(0, section.getInt("air"));
+      }
 
-    int minStrikes = Math.max(0, section.getInt("lightning.min", 0));
-    int maxStrikes = Math.max(minStrikes, section.getInt("lightning.max", minStrikes));
-    float minStrikeRange = (float) Math.max(0.0, section.getDouble("lightning.minrange", 2.0));
-    float maxStrikeRange = (float) Math.max(minStrikeRange, section.getDouble("lightning.maxrange", 5.0));
-    int strikeDuration = Math.max(0, section.getInt("lightning.duration", 30));
-    CreatureType type = new CreatureType(section.getName(), spawn, mount, mask, health, air, despawns,
-                                         sound, minStrikes, maxStrikes, minStrikeRange, maxStrikeRange, strikeDuration);
-
-    // Load up the potion effects.
-    if (section.isList("potions"))
-    {
+      String soundName = section.getString("sound");
       try
       {
-        type.loadPotions(section.getMapList("potions"), logger);
+        if (soundName != null && soundName.length() != 0)
+        {
+          type._sound = Sound.valueOf(soundName.toUpperCase());
+        }
       }
       catch (Exception ex)
       {
-        logger.warning(ex.getClass().getName() + " loading potions for " + section.getName());
+        logger.warning("Creature " + section.getName() + " has invalid sound " + soundName);
       }
-    }
 
-    // Load armour and weapon.
-    type._helmet = loadItem(section.getConfigurationSection("helmet"), logger);
-    type._chestPlate = loadItem(section.getConfigurationSection("chestplate"), logger);
-    type._leggings = loadItem(section.getConfigurationSection("leggings"), logger);
-    type._boots = loadItem(section.getConfigurationSection("boots"), logger);
-    type._weapon = loadItem(section.getConfigurationSection("weapon"), logger);
-    type._helmetDropChance = (float) section.getDouble("helmet.dropchance", 0.0f);
-    type._chestPlateDropChance = (float) section.getDouble("chestplate.dropchance", 0.0f);
-    type._leggingsDropChance = (float) section.getDouble("leggings.dropchance", 0.0f);
-    type._bootsDropChance = (float) section.getDouble("boots.dropchance", 0.0f);
-    type._weaponDropChance = (float) section.getDouble("weapon.dropchance", 0.0f);
+      type._minStrikes = Math.max(0, section.getInt("lightning.min", 0));
+      type._maxStrikes = Math.max(type._minStrikes, section.getInt("lightning.max", type._minStrikes));
+      type._minStrikeRange = (float) Math.max(0.0, section.getDouble("lightning.minrange", 2.0));
+      type._maxStrikeRange = (float) Math.max(type._minStrikeRange, section.getDouble("lightning.maxrange", 5.0));
+      type._strikeDuration = Math.max(0, section.getInt("lightning.duration", 30));
 
-    // Escorts.
-    if (section.isConfigurationSection("escorts"))
-    {
-      type.loadEscorts(section.getConfigurationSection("escorts"), logger);
+      // Load up the potion effects.
+      if (section.isList("potions"))
+      {
+        try
+        {
+          type.loadPotions(section.getMapList("potions"), logger);
+        }
+        catch (Exception ex)
+        {
+          logger.warning(ex.getClass().getName() + " loading potions for " + section.getName());
+        }
+      }
+
+      // Load armour and weapon.
+      type._helmet = loadItem(section.getConfigurationSection("helmet"), logger);
+      type._chestPlate = loadItem(section.getConfigurationSection("chestplate"), logger);
+      type._leggings = loadItem(section.getConfigurationSection("leggings"), logger);
+      type._boots = loadItem(section.getConfigurationSection("boots"), logger);
+      type._weapon = loadItem(section.getConfigurationSection("weapon"), logger);
+      if (section.isSet("helmet.dropchance"))
+      {
+        type._helmetDropChance = section.getDouble("helmet.dropchance");
+      }
+      if (section.isSet("chestplate.dropchance"))
+      {
+        type._chestPlateDropChance = section.getDouble("chestplate.dropchance");
+      }
+      if (section.isSet("leggings.dropchance"))
+      {
+        type._leggingsDropChance = section.getDouble("leggings.dropchance");
+      }
+      if (section.isSet("boots.dropchance"))
+      {
+        type._bootsDropChance = section.getDouble("boots.dropchance");
+      }
+      if (section.isSet("weapon.dropchance"))
+      {
+        type._weaponDropChance = section.getDouble("weapon.dropchance");
+      }
+
+      // Escorts.
+      if (section.isConfigurationSection("escorts"))
+      {
+        type.loadEscorts(section.getConfigurationSection("escorts"), logger);
+      }
+      return type;
     }
-    return type;
   } // loadFromSection
 
   // --------------------------------------------------------------------------
@@ -120,40 +154,11 @@ public class CreatureType
    * 
    * @param name a unique identifier for this type.
    * @param creatureType the type of creature to spawn.
-   * @param mount the type of creature that this creature is riding.
-   * @param mask the name of the player whose head this creature should always
-   *          wear (as a mask), irrespective of the player name it was summoned
-   *          with.
-   * @param health the maximum health of the creature in half-hearts.
-   * @param air the lung capacity of the creature in ticks.
-   * @param despawns true if the creature will despawn when the player is too
-   *          far away.
-   * @param sound sound played when spawning (can be null).
-   * @param minStrikes minimum number of lightning strikes when spawned.
-   * @param maxStrikes maximum number of lightning strikes when spawned.
-   * @param minStrikeRange minimum distance of strikes from spawn location.
-   * @param maxStrikeRange maximum distance of strikes from spawn location.
-   * @param strikeDuration maximum period between spawning and last strike in
-   *          ticks.
    */
-  public CreatureType(String name, String creatureType, String mount, String mask,
-                      int health, int air, boolean despawns, Sound sound,
-                      int minStrikes, int maxStrikes,
-                      float minStrikeRange, float maxStrikeRange, int strikeDuration)
+  public CreatureType(String name, String creatureType)
   {
     _name = name;
     _creatureType = creatureType;
-    _mount = mount;
-    _mask = mask;
-    _health = health;
-    _air = air;
-    _despawns = despawns;
-    _sound = sound;
-    _minStrikes = minStrikes;
-    _maxStrikes = maxStrikes;
-    _minStrikeRange = minStrikeRange;
-    _maxStrikeRange = maxStrikeRange;
-    _strikeDuration = strikeDuration;
   }
 
   // --------------------------------------------------------------------------
@@ -184,8 +189,9 @@ public class CreatureType
   /**
    * Return the type of creature that this creature is riding.
    * 
-   * @return the type of creature that this creature is riding; if not riding
-   *         anthing, it is the empty string.
+   * @return the type of creature that this creature is riding. If not set in
+   *         the configuration, it will be null. If null or set to the empty
+   *         string, nothing will be ridden.
    */
   public String getMount()
   {
@@ -252,7 +258,7 @@ public class CreatureType
         @Override
         public void run()
         {
-          plugin.spawnDoppelganger(_escortTypes.choose(), null, loc);
+          plugin.getCreatureFactory().spawnCreature(_escortTypes.choose(), loc, null, plugin);
         }
       }, delay);
     }
@@ -267,21 +273,60 @@ public class CreatureType
    */
   public void customise(LivingEntity entity)
   {
-    entity.setMaxHealth(_health);
-    entity.setHealth(_health);
-    entity.setMaximumAir(_air);
-    entity.setRemoveWhenFarAway(_despawns);
+    if (_health != null)
+    {
+      entity.setMaxHealth(_health);
+      entity.setHealth(_health);
+    }
+    if (_air != null)
+    {
+      entity.setMaximumAir(_air);
+    }
+    if (_despawns != null)
+    {
+      entity.setRemoveWhenFarAway(_despawns);
+    }
     entity.addPotionEffects(_potions);
-    entity.getEquipment().setHelmet(_helmet);
-    entity.getEquipment().setHelmetDropChance(_helmetDropChance);
-    entity.getEquipment().setChestplate(_chestPlate);
-    entity.getEquipment().setChestplateDropChance(_chestPlateDropChance);
-    entity.getEquipment().setLeggings(_leggings);
-    entity.getEquipment().setLeggingsDropChance(_leggingsDropChance);
-    entity.getEquipment().setBoots(_boots);
-    entity.getEquipment().setBootsDropChance(_bootsDropChance);
-    entity.getEquipment().setItemInHand(_weapon);
-    entity.getEquipment().setItemInHandDropChance(_weaponDropChance);
+    if (_helmet != null)
+    {
+      entity.getEquipment().setHelmet(_helmet);
+    }
+    if (_helmetDropChance != null)
+    {
+      entity.getEquipment().setHelmetDropChance(_helmetDropChance.floatValue());
+    }
+    if (_chestPlate != null)
+    {
+      entity.getEquipment().setChestplate(_chestPlate);
+    }
+    if (_chestPlateDropChance != null)
+    {
+      entity.getEquipment().setChestplateDropChance(_chestPlateDropChance.floatValue());
+    }
+    if (_leggings != null)
+    {
+      entity.getEquipment().setLeggings(_leggings);
+    }
+    if (_leggingsDropChance != null)
+    {
+      entity.getEquipment().setLeggingsDropChance(_leggingsDropChance.floatValue());
+    }
+    if (_boots != null)
+    {
+      entity.getEquipment().setBoots(_boots);
+    }
+    if (_bootsDropChance != null)
+    {
+      entity.getEquipment().setBootsDropChance(_bootsDropChance.floatValue());
+    }
+    if (_weapon != null)
+    {
+      entity.getEquipment().setItemInHand(_weapon);
+    }
+    if (_weaponDropChance != null)
+    {
+      entity.getEquipment().setItemInHandDropChance(_weaponDropChance.floatValue());
+    }
   } // customise
 
   // --------------------------------------------------------------------------
@@ -294,10 +339,19 @@ public class CreatureType
   {
     sender.sendMessage(ChatColor.GOLD + "Creature " + getName() + ":");
     sender.sendMessage(ChatColor.GOLD + "    Spawn: " + ChatColor.YELLOW + getCreatureType());
-    sender.sendMessage(ChatColor.GOLD + "    Health: " + ChatColor.YELLOW + _health + " half hearts");
-    sender.sendMessage(ChatColor.GOLD + "    Air: " + ChatColor.YELLOW + _air + " ticks");
-    sender.sendMessage(ChatColor.GOLD + "    Can despawn: " + ChatColor.YELLOW + _despawns);
-    if (getMount().length() != 0)
+    if (_health != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Health: " + ChatColor.YELLOW + _health + " half hearts");
+    }
+    if (_air != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Air: " + ChatColor.YELLOW + _air + " ticks");
+    }
+    if (_despawns != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Can despawn: " + ChatColor.YELLOW + _despawns);
+    }
+    if (getMount() != null && getMount().length() != 0)
     {
       sender.sendMessage(ChatColor.GOLD + "    Mount: " + ChatColor.YELLOW + getMount());
     }
@@ -331,30 +385,44 @@ public class CreatureType
     {
       sender.sendMessage(ChatColor.GOLD + "    Helmet: " + ChatColor.YELLOW + getItemDescription(_helmet));
     }
-    // Show drop chance for helmet (head) regardless.
-    sender.sendMessage(String.format("%s    Helmet drop chance: %s%.2f%%",
-      ChatColor.GOLD, ChatColor.YELLOW, 100 * _helmetDropChance));
+    if (_helmetDropChance != null)
+    {
+      sender.sendMessage(String.format("%s    Helmet drop chance: %s%.2f%%",
+        ChatColor.GOLD, ChatColor.YELLOW, 100 * _helmetDropChance));
+    }
     if (_chestPlate != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Chest plate: " + ChatColor.YELLOW + getItemDescription(_chestPlate));
+    }
+    if (_chestPlateDropChance != null)
+    {
       sender.sendMessage(String.format("%s    Chest plate drop chance: %s%.2f%%",
         ChatColor.GOLD, ChatColor.YELLOW, 100 * _chestPlateDropChance));
     }
     if (_leggings != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Leggings: " + ChatColor.YELLOW + getItemDescription(_leggings));
+    }
+    if (_leggingsDropChance != null)
+    {
       sender.sendMessage(String.format("%s    Leggings drop chance: %s%.2f%%",
         ChatColor.GOLD, ChatColor.YELLOW, 100 * _leggingsDropChance));
     }
     if (_boots != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Boots: " + ChatColor.YELLOW + getItemDescription(_boots));
+    }
+    if (_bootsDropChance != null)
+    {
       sender.sendMessage(String.format("%s    Boots drop chance: %s%.2f%%",
         ChatColor.GOLD, ChatColor.YELLOW, 100 * _bootsDropChance));
     }
     if (_weapon != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Weapon: " + ChatColor.YELLOW + getItemDescription(_weapon));
+    }
+    if (_weaponDropChance != null)
+    {
       sender.sendMessage(String.format("%s    Weapon drop chance: %s%.2f%%",
         ChatColor.GOLD, ChatColor.YELLOW, 100 * _weaponDropChance));
     }
@@ -555,8 +623,16 @@ public class CreatureType
         {
           ConfigMap map = new ConfigMap(summons.get(i), logger, escorts.getName() + " summon " + i);
           double weight = map.getDouble("weight", 1.0);
-          String spawn = map.getString("spawn", "");
-          _escortTypes.addChoice(spawn, weight);
+          String spawn = map.getString("spawn", null);
+          if (spawn == null || spawn.length() == 0 || weight <= 0.0)
+          {
+            logger.warning(String.format("In %s, entry %d of %d has an invalid weight or spawn value.",
+              escorts.getCurrentPath(), (i + 1), summons.size()));
+          }
+          else
+          {
+            _escortTypes.addChoice(spawn, weight);
+          }
         }
       }
       catch (Exception ex)
@@ -622,38 +698,43 @@ public class CreatureType
   protected String                    _name;
 
   /**
-   * The type of the creature to spawn, including custom types.
+   * The type of the creature to spawn, including custom types. Will be
+   * non-null, non empty and a valid creature type.
    */
   protected String                    _creatureType;
 
   /**
-   * The type of creature that this creature is riding.
+   * The type of creature that this creature is riding. Null if not set in the
+   * configuration.
    */
   protected String                    _mount;
 
   /**
    * The name of the player whose head this creature should always wear,
-   * irrespective of the player name it was summoned with.
+   * irrespective of the player name it was summoned with. Null if not set in
+   * the configuration.
    */
   protected String                    _mask;
 
   /**
-   * Maximum health in half-hearts.
+   * Maximum health in half-hearts. Null if not set in the configuration.
    */
-  protected int                       _health;
+  protected Integer                   _health;
 
   /**
-   * The lung capacity of the creature in ticks.
+   * The lung capacity of the creature in ticks. Null if not set in the
+   * configuration.
    */
-  protected int                       _air;
+  protected Integer                   _air;
 
   /**
-   * True if the creature will despawn when the player is too far away.
+   * True if the creature will despawn when the player is too far away. Null if
+   * not set in the configuration.
    */
-  protected boolean                   _despawns;
+  protected Boolean                   _despawns;
 
   /**
-   * The sound of this creature spawning.
+   * The sound of this creature spawning. Null if not set in the configuration.
    */
   protected Sound                     _sound;
 
@@ -688,54 +769,58 @@ public class CreatureType
   protected ArrayList<PotionEffect>   _potions     = new ArrayList<PotionEffect>();
 
   /**
-   * Helmet.
+   * Helmet. Null if not set in the configuration.
    */
   protected ItemStack                 _helmet;
 
   /**
-   * Chestplate.
+   * Chestplate. Null if not set in the configuration.
    */
   protected ItemStack                 _chestPlate;
 
   /**
-   * Leggings.
+   * Leggings. Null if not set in the configuration.
    */
   protected ItemStack                 _leggings;
 
   /**
-   * Boots.
+   * Boots. Null if not set in the configuration.
    */
   protected ItemStack                 _boots;
 
   /**
-   * Item in hand.
+   * Item in hand. Null if not set in the configuration.
    */
   protected ItemStack                 _weapon;
 
   /**
-   * Chance of dropping helmet, [0.0, 1.0].
+   * Chance of dropping helmet, [0.0, 1.0]. Null if not set in the
+   * configuration.
    */
-  protected float                     _helmetDropChance;
+  protected Double                    _helmetDropChance;
 
   /**
-   * Chance of dropping chestplate, [0.0, 1.0].
+   * Chance of dropping chestplate, [0.0, 1.0]. Null if not set in the
+   * configuration.
    */
-  protected float                     _chestPlateDropChance;
+  protected Double                    _chestPlateDropChance;
 
   /**
-   * Chance of dropping leggings, [0.0, 1.0].
+   * Chance of dropping leggings, [0.0, 1.0]. Null if not set in the
+   * configuration.
    */
-  protected float                     _leggingsDropChance;
+  protected Double                    _leggingsDropChance;
 
   /**
-   * Chance of dropping boots, [0.0, 1.0].
+   * Chance of dropping boots, [0.0, 1.0]. Null if not set in the configuration.
    */
-  protected float                     _bootsDropChance;
+  protected Double                    _bootsDropChance;
 
   /**
-   * Chance of dropping item in hand, [0.0, 1.0].
+   * Chance of dropping item in hand, [0.0, 1.0]. Null if not set in the
+   * configuration.
    */
-  protected float                     _weaponDropChance;
+  protected Double                    _weaponDropChance;
 
   /**
    * Minimum number of escort creatures.

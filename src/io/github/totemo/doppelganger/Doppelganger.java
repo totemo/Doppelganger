@@ -94,7 +94,7 @@ public class Doppelganger extends JavaPlugin implements Listener
         {
           // Generic case where the doppelganger name doesn't matter.
           // Check whether there is a complete creature under the trigger block.
-          CreatureShape shape = _creatureFactory.getCreatureShape(world, loc, event.getPlayer().getItemInHand());
+          CreatureShape shape = _creatureFactory.getCreatureShape(loc, event.getPlayer().getItemInHand());
           if (shape != null)
           {
             String creatureType = shape.chooseCreatureType();
@@ -142,17 +142,11 @@ public class Doppelganger extends JavaPlugin implements Listener
   public LivingEntity spawnDoppelganger(String creatureType, String name, Location loc)
   {
     // If a custom creature, do configured special effects.
-    CreatureType type = _creatureFactory.getCreatureType(creatureType);
-    if (type != null)
-    {
-      type.doSpawnEffects(this, loc);
-      type.spawnEscorts(this, loc);
-    }
-
-    LivingEntity doppelganger = _creatureFactory.spawnCreature(creatureType, loc, name);
+    LivingEntity doppelganger = _creatureFactory.spawnCreature(creatureType, loc, name, this);
     if (doppelganger != null)
     {
       // Make the doppelganger wear the player head or type-specific mask.
+      CreatureType type = _creatureFactory.getCreatureType(creatureType);
       String playerNameOfHead = (type != null && type.getMask() != null) ? type.getMask() : name;
       if (playerNameOfHead != null && playerNameOfHead.length() != 0)
       {

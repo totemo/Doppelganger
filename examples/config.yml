@@ -84,6 +84,8 @@ creatures:
     - type: regeneration
     - type: increase_damage
       amplifier: 2
+    helmet:
+      dropchance: 1.0
     chestplate:
       item: diamond_chestplate
       damage: 3
@@ -94,6 +96,7 @@ creatures:
       dropchance: 0.0
     weapon:
       item: diamond_sword
+      dropchance: 0.0
 
   ToughSkeleton:
     spawn: Skeleton
@@ -184,9 +187,13 @@ creatures:
     spawn: Witch
     mount: InvisibleBat
 
-  CaveSpiderWitch:
+  WitchOnCaveSpider:
     spawn: Witch
     mount: CaveSpider
+
+  ToughWitherSkeletonOnSpider:
+    spawn: ToughWitherSkeleton
+    mount: Spider
 
   InvisibleBlaze:
     spawn: Blaze
@@ -260,7 +267,7 @@ creatures:
   jeb_:
     health: 60
     air: 72000
-    spawn: ToughSkeleton
+    spawn: ToughWitherSkeleton
     despawns: false
     mount: FlyingSaddledPig
     lightning:
@@ -283,8 +290,8 @@ creatures:
       item: diamond_sword
       dropchance: 0.05
     escorts:
-      min: 3
-      max: 8
+      min: 8
+      max: 12
       minrange: 1.0
       maxrange: 5.0
       summon:
@@ -293,7 +300,9 @@ creatures:
       - weight: 1.0
         spawn: FlyingWitch
       - weight: 1.0
-        spawn: CaveSpiderWitch
+        spawn: WitchOnCaveSpider
+      - weight: 1.0
+        spawn: ToughWitherSkeletonOnSpider
 
   Dinnerbone:
     health: 80
@@ -386,25 +395,16 @@ players:
   Villain:
     shapes:
     - diamond_2pillar
-    
+
 help:
   topic:
     help:
       variant:
         1:
           usage: 
-          - "&r&f/&6doppel help &f[&6reload&f|&6info&f|&6coords&f|&6kill&f|&6spawn&f|&6maintain&f]"
+          - "&r&f/&6doppel help &f[&6info&f|&6coords&f|&6kill&f|&6spawn&f|&6maintain&f]"
           description:
           - "&r&f    Show descriptions of &6/doppel &fsubcommands."
-          - ""
-
-    reload:
-      variant:
-        1:
-          usage: 
-          - "&r&f/&6doppel reload"
-          description: 
-          - "&r&f    Reload the Doppelganger configuration."
           - ""
 
     info:
@@ -530,5 +530,4 @@ help:
           description:
           - "&r    &fSpawn a doppelganger with the specified name and type at (x,y,z) in the named world if there are no doppelgangers with that name and type in the sphere whose centre is (xc,yc,zc).  If there is more than one doppelganger with that name in the sphere, kill all but the oldest one."
           - ""
-
 

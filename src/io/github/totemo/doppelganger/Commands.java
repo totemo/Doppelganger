@@ -365,6 +365,7 @@ public class Commands
       }
     }
   } // onCommandDoppelMaintain
+
   // --------------------------------------------------------------------------
   /**
    * Return a list of all LivingEntity instances with the specified visible
@@ -411,26 +412,27 @@ public class Commands
    */
   protected void spawnAndLog(CommandSender sender, String type, String name, Location loc)
   {
+    String nameClause = (name == null) ? "" : " named " + name;
     if (_plugin.getCreatureFactory().isValidCreatureType(type))
     {
       LivingEntity doppelganger = _plugin.spawnDoppelganger(type, name, loc);
       if (doppelganger == null)
       {
         sender.sendMessage(String.format(
-          "%sSpawning a %s named %s at (%d,%d,%d) in %s failed unexpectedly.",
-          _failureColour, type, name, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
+          "%sSpawning a %s%s at (%d,%d,%d) in %s failed unexpectedly.",
+          _failureColour, type, nameClause, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
         _plugin.getLogger().info(String.format(
           "%s tried to spawn a %s named %s at (%d,%d,%d) in %s but it failed unexpectedly.",
-          sender.getName(), type, name, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
+          sender.getName(), type, nameClause, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
       }
       else
       {
         sender.sendMessage(String.format(
-          "%sSpawned a %s named %s at (%d,%d,%d) in %s.",
-          _successColour, type, name, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
+          "%sSpawned a %s%s at (%d,%d,%d) in %s.",
+          _successColour, type, nameClause, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
         _plugin.getLogger().info(String.format(
-          "%s spawned a %s named %s at (%d,%d,%d) in %s.",
-          sender.getName(), type, name, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
+          "%s spawned a %s%s at (%d,%d,%d) in %s.",
+          sender.getName(), type, nameClause, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));
       }
     }
     else

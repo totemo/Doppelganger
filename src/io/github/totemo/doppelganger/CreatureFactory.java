@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -104,19 +103,22 @@ public class CreatureFactory
         else
         {
           CreatureType type = CreatureType.loadFromSection(creaturesSection.getConfigurationSection(creatureName), logger);
-          if (creatureName.equals(type.getCreatureType()))
+          if (type != null)
           {
-            // Prevent infinite recursion in spawnCreature().
-            logger.warning("Creature " + creatureName + " cannot be defined in terms of itself.");
-          }
-          else if (isValidCreatureType(type.getCreatureType()))
-          {
-            _types.put(creatureName.toLowerCase(), type);
-          }
-          else
-          {
-            logger.warning("Can't define creature " + type.getName() +
-                           " because we can't spawn a " + type.getCreatureType());
+            if (creatureName.equals(type.getCreatureType()))
+            {
+              // Prevent infinite recursion in spawnCreature().
+              logger.warning("Creature " + creatureName + " cannot be defined in terms of itself.");
+            }
+            else if (isValidCreatureType(type.getCreatureType()))
+            {
+              _types.put(creatureName.toLowerCase(), type);
+            }
+            else
+            {
+              logger.warning("Can't define creature " + type.getName() +
+                             " because we can't spawn a " + type.getCreatureType());
+            }
           }
         }
       } // for
@@ -242,13 +244,12 @@ public class CreatureFactory
    * The placed item must be named (by an anvil) and the shape and type of the
    * blocks around it must match one of those specified in the configuration.
    * 
-   * @param world the World.
    * @param loc the location where the triggering item is placed.
    * @param placedItem the item to be tested as a trigger of creature summoning.
    * @return the {@link CreatureShape} of the creature that would be created, or
    *         null if no creature would be created.
    */
-  public CreatureShape getCreatureShape(World world, Location loc, ItemStack placedItem)
+  public CreatureShape getCreatureShape(Location loc, ItemStack placedItem)
   {
     // Linear search probably doesn't matter. How often do you place explicitly
     // named blocks?
@@ -365,9 +366,11 @@ public class CreatureFactory
    * @param loc the spawn location (block above ground level).
    * @param name the custom name to assign and display; not set or shown if null
    *          of the empty string.
+   * @param plugin the Plugin, used to schedule future events for special
+   *          effects.
    * @return the spawned LivingEntity, or null if nothing was spawned.
    */
-  protected LivingEntity spawnCreature(String creatureType, Location loc, String name)
+  protected LivingEntity spawnCreature(String creatureType, Location loc, String name, Doppelganger plugin)
   {
     // Spawn the entity.
     LivingEntity livingEntity = null;
@@ -375,9 +378,12 @@ public class CreatureFactory
     CreatureType type = getCreatureType(creatureType);
     if (type != null)
     {
+      type.doSpawnEffects(plugin, loc);
+      type.spawnEscorts(plugin, loc);
+
       // The creature is recursively defined in terms of spawning another
       // creature and customising that.
-      livingEntity = spawnCreature(type.getCreatureType(), loc, null);
+      livingEntity = spawnCreature(type.getCreatureType(), loc, null, plugin);
       if (livingEntity != null)
       {
         type.customise(livingEntity);
@@ -392,9 +398,9 @@ public class CreatureFactory
         }
 
         // Spawn the mount if possible.
-        if (isValidCreatureType(type.getMount()))
+        if (type.getMount() != null && isValidCreatureType(type.getMount()))
         {
-          LivingEntity mount = spawnCreature(type.getMount(), loc, null);
+          LivingEntity mount = spawnCreature(type.getMount(), loc, null, plugin);
           mount.setPassenger(livingEntity);
         }
       }

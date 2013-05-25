@@ -152,6 +152,12 @@ public class CommandController implements CommandExecutor
     {
       return (superCommand.getName() + " " + subCommand).trim();
     }
+
+    @Override
+    public int hashCode()
+    {
+      return super.hashCode();
+    }
   }
 
   /**
