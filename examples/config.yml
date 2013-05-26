@@ -43,6 +43,78 @@ shapes:
     - weight: 1.0
       spawn: ToughWitherSkeleton
 
+  wool_2pillar:
+    head: skull_item
+    body:
+    - material: wool
+      offset: [0, -1, 0]
+    - material: wool
+      offset: [0, -2, 0]
+    summon:
+    - weight: 1.0
+      spawn: SpecialVillager
+
+  wool_quadruped_sn:
+    head: skull_item
+    body:
+    - material: wool
+      offset: [0, 0, -1]
+    - material: wool
+      offset: [0, 0, -2]
+    - material: fence_gate
+      offset: [0, -1, -1]
+    - material: fence_gate
+      offset: [0, -1, -2]
+    summon:
+    - weight: 1.0
+      spawn: SpecialCow
+
+  wool_quadruped_ns:
+    head: skull_item
+    body:
+    - material: wool
+      offset: [0, 0, 1]
+    - material: wool
+      offset: [0, 0, 2]
+    - material: fence_gate
+      offset: [0, -1, 1]
+    - material: fence_gate
+      offset: [0, -1, 2]
+    summon:
+    - weight: 1.0
+      spawn: SpecialCow
+
+
+  wool_quadruped_ew:
+    head: skull_item
+    body:
+    - material: wool
+      offset: [-1, 0, 0]
+    - material: wool
+      offset: [-2, 0, 0]
+    - material: fence_gate
+      offset: [-1, -1, 0]
+    - material: fence_gate
+      offset: [-2, -1, 0]
+    summon:
+    - weight: 1.0
+      spawn: SpecialCow
+
+  wool_quadruped_we:
+    head: skull_item
+    body:
+    - material: wool
+      offset: [1, 0, 0]
+    - material: wool
+      offset: [2, 0, 0]
+    - material: fence_gate
+      offset: [1, -1, 0]
+    - material: fence_gate
+      offset: [2, -1, 0]
+    summon:
+    - weight: 1.0
+      spawn: SpecialCow
+
   gold_diamond_2pillar:
     head: pumpkin
     body:
@@ -68,6 +140,20 @@ creatures:
   SpecialBat:
     spawn: Bat
     sound: ambience_cave
+
+  SpecialCow:
+    spawn: Cow
+    sound: ambience_cave
+    lightning:
+      min: 1
+    despawns: false
+
+  SpecialVillager:
+    spawn: Villager
+    sound: ambience_cave
+    lightning:
+      min: 1
+    despawns: false
 
   ToughWitherSkeleton:
     spawn: WitherSkeleton
