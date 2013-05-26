@@ -37,6 +37,13 @@ public class Doppelganger extends JavaPlugin implements Listener
     _configuration.load();
 
     getServer().getPluginManager().registerEvents(this, this);
+
+    // The Plugin.getLogger() (used by help) is null at Doppelganger
+    // construction time.
+    if (_commands == null)
+    {
+      _commands = new Commands(this);
+    }
     CommandController.registerCommands(this, _commands);
   }
 
@@ -252,5 +259,5 @@ public class Doppelganger extends JavaPlugin implements Listener
   /**
    * Handles the command line.
    */
-  protected Commands        _commands        = new Commands(this);
+  protected Commands        _commands;
 } // class Doppelganger

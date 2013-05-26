@@ -30,7 +30,7 @@ public class Commands
   public Commands(Doppelganger plugin)
   {
     _plugin = plugin;
-    _help = new Help(plugin);
+    _help = new Help("Help", plugin.getLogger());
   }
 
   // --------------------------------------------------------------------------
@@ -626,7 +626,7 @@ public class Commands
       Location senderLoc = getLocation(sender);
       if (senderLoc == null)
       {
-        sender.sendMessage(_failureColour + "This command cannot be run from the console.");
+        sender.sendMessage(_failureColour + "The console doesn't have a location. Try specifying a world and coordinates.");
       }
       return senderLoc;
     }
@@ -715,7 +715,7 @@ public class Commands
           Location senderLoc = getLocation(sender);
           if (senderLoc == null)
           {
-            sender.sendMessage(_failureColour + "This command cannot be run from the console.");
+            sender.sendMessage(_failureColour + "The console doesn't have a location. Try specifying a world and coordinates.");
             return null;
           }
 
