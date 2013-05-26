@@ -388,15 +388,6 @@ public class CreatureFactory
       {
         type.customise(livingEntity);
 
-        if (name != null && name.length() != 0)
-        {
-          // TODO: Allow custom prefix and/or suffix.
-          // TODO: Possibly allow prefix/suffix to indicate creator/owner of
-          // creature.
-          livingEntity.setCustomName(name);
-          livingEntity.setCustomNameVisible(true);
-        }
-
         // Spawn the mount if possible.
         if (type.getMount() != null && isValidCreatureType(type.getMount()))
         {
@@ -435,6 +426,19 @@ public class CreatureFactory
             }
           }
         }
+      }
+    }
+
+    // Whether a special type or not, name it.
+    if (livingEntity != null)
+    {
+      if (name != null && name.length() != 0)
+      {
+        // TODO: Allow custom prefix and/or suffix.
+        // TODO: Possibly allow prefix/suffix to indicate creator/owner of
+        // creature.
+        livingEntity.setCustomName(name);
+        livingEntity.setCustomNameVisible(true);
       }
     }
     return livingEntity;
