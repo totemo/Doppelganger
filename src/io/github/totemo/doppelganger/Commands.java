@@ -37,9 +37,11 @@ public class Commands
   /**
    * This method is called if none of the subcommands matches exactly.
    * 
-   * We use it to print the help messages for all commands.
+   * We use it to print the help messages for all commands that the user has
+   * permission to use. There's not much point in showing the other commands,
+   * although they can explicitly request documentation with /doppel help.
    */
-  @CommandHandler(name = "doppel", permission = "doppel.help")
+  @CommandHandler(name = "doppel", permission = "doppelganger.help")
   public void onCommand(CommandSender sender, String[] args)
   {
     if (args.length > 0)
@@ -51,7 +53,10 @@ public class Commands
       "&eUsage summary:"));
     for (String topic : _help.getTopics())
     {
-      _help.showHelp(sender, topic, false);
+      if (sender.hasPermission("doppelganger." + topic))
+      {
+        _help.showHelp(sender, topic, false);
+      }
     }
     sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
       "&eType /doppel help &d&osubcommand &efor detailed descriptions of subcommands."));
@@ -61,7 +66,7 @@ public class Commands
   /**
    * Handle the /doppel help command.
    */
-  @SubCommandHandler(parent = "doppel", name = "help", permission = "doppel.help")
+  @SubCommandHandler(parent = "doppel", name = "help", permission = "doppelganger.help")
   public void onCommandDoppeHelp(CommandSender sender, String[] args)
   {
     if (args.length == 2)
@@ -88,7 +93,7 @@ public class Commands
    * Handle the /doppel info [list | shape &lt;name&gt; | creature &lt;name&gt;
    * | player &lt;name&gt;] command.
    */
-  @SubCommandHandler(parent = "doppel", name = "info", permission = "doppel.info")
+  @SubCommandHandler(parent = "doppel", name = "info", permission = "doppelganger.info")
   public void onCommandDoppelInfo(CommandSender sender, String[] args)
   {
     if (args.length == 2)
@@ -178,7 +183,7 @@ public class Commands
    * If the name is not specified, any name will match. The CommandSender can be
    * a player or a command block.
    */
-  @SubCommandHandler(parent = "doppel", name = "coords", permission = "doppel.coords")
+  @SubCommandHandler(parent = "doppel", name = "coords", permission = "doppelganger.coords")
   public void onCommandDoppelCoords(CommandSender sender, String[] args)
   {
     ArrayList<String> tail = tail(args, 1);
@@ -226,7 +231,7 @@ public class Commands
    * @param sender the issuer of the command.
    * @param args command arguments after the initial /doppel.
    */
-  @SubCommandHandler(parent = "doppel", name = "kill", permission = "doppel.kill")
+  @SubCommandHandler(parent = "doppel", name = "kill", permission = "doppelganger.kill")
   public void onCommandDoppelKill(CommandSender sender, String[] args)
   {
     ArrayList<String> tail = tail(args, 1);
@@ -270,7 +275,7 @@ public class Commands
    * @param sender the issuer of the command.
    * @param args command arguments after the initial /doppel.
    */
-  @SubCommandHandler(parent = "doppel", name = "spawn", permission = "doppel.spawn")
+  @SubCommandHandler(parent = "doppel", name = "spawn", permission = "doppelganger.spawn")
   public void onCommandDoppelSpawn(CommandSender sender, String[] args)
   {
     ArrayList<String> tail = tail(args, 1);
@@ -310,7 +315,7 @@ public class Commands
    * @param sender the issuer of the command.
    * @param args command arguments after the initial /doppel.
    */
-  @SubCommandHandler(parent = "doppel", name = "maintain", permission = "doppel.maintain")
+  @SubCommandHandler(parent = "doppel", name = "maintain", permission = "doppelganger.maintain")
   public void onCommandDoppelMaintain(CommandSender sender, String[] args)
   {
     ArrayList<String> tail = tail(args, 1);

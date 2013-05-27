@@ -8,7 +8,7 @@ commands:
   doppel:
     description: Describes, finds, spawns and kills doppelgangers. See /doppel help.
     usage: /doppel [help|info|coords|kill|spawn|maintain] <subcommand arguments>
-    permission: doppel.info
+    permission: doppelganger.help
 permissions:
   doppelganger.*:
     description: Permission to use doppelganger commands.
