@@ -58,6 +58,7 @@ public class CreatureShape
       if (headMaterial == null)
       {
         logger.warning("Shape " + section.getName() + "'s head material is invalid.");
+        return null;
       }
       else
       {
@@ -80,10 +81,19 @@ public class CreatureShape
               List<Number> offset = map.getNumberList("offset", null);
               if (mat != null && offset != null && offset.size() == 3)
               {
-                Vector vector = new Vector(offset.get(0).intValue(),
-                                             offset.get(1).intValue(),
-                                             offset.get(2).intValue());
-                shape.addCreatureBlock(mat, vector);
+                int x = offset.get(0).intValue();
+                int y = offset.get(1).intValue();
+                int z = offset.get(2).intValue();
+                if (x == 0 && y == 0 && z == 0)
+                {
+                  logger.warning("block index " + i + " can't have offset (0,0,0) because that is where the head goes");
+                  return null;
+                }
+                else
+                {
+                  Vector vector = new Vector(x, y, z);
+                  shape.addCreatureBlock(mat, vector);
+                }
               }
               else
               {
@@ -117,6 +127,9 @@ public class CreatureShape
           }
         } // summon
       } // head material is valid.
+
+      // Compute the mandatory one-block horizontal border of air.
+      shape.computeBorder();
       return shape;
     }
     catch (Exception ex)
@@ -258,6 +271,7 @@ public class CreatureShape
     }
     return true;
   }
+
   // --------------------------------------------------------------------------
   /**
    * Set all of the blocks of the creature shape at the specified location to
@@ -300,14 +314,32 @@ public class CreatureShape
     if (_materialIds.size() != 0)
     {
       sender.sendMessage(ChatColor.GOLD + "    Body: ");
+      for (int i = 0; i < _materialIds.size(); ++i)
+      {
+        sender.sendMessage(String.format("%s        (%d) %s at (%d, %d, %d)",
+          ChatColor.YELLOW, i + 1, Material.getMaterial(_materialIds.get(i)).toString(),
+          _offsets.get(i).getBlockX(), _offsets.get(i).getBlockY(), _offsets.get(i).getBlockZ()));
+      }
     }
-    for (int i = 0; i < _materialIds.size(); ++i)
+    if (_border.size() != 0)
     {
-      sender.sendMessage(String.format("%s        (%d) %s at (%d, %d, %d)",
-        ChatColor.YELLOW, i + 1, Material.getMaterial(_materialIds.get(i)).toString(),
-        _offsets.get(i).getBlockX(), _offsets.get(i).getBlockY(), _offsets.get(i).getBlockZ()));
+      sender.sendMessage(ChatColor.GOLD + "    Border: ");
+      StringBuilder border = new StringBuilder();
+      border.append(ChatColor.YELLOW);
+      border.append("        ");
+      for (int i = 0; i < _border.size(); ++i)
+      {
+        Vector v = _border.get(i);
+        border.append('(');
+        border.append(v.getBlockX());
+        border.append(',');
+        border.append(v.getBlockY());
+        border.append(',');
+        border.append(v.getBlockZ());
+        border.append(") ");
+      }
+      sender.sendMessage(border.toString());
     }
-
     if (!_types.entrySet().isEmpty())
     {
       sender.sendMessage(ChatColor.GOLD + "    Summoning probabilities: ");
@@ -320,6 +352,34 @@ public class CreatureShape
       }
     }
   } // describe
+
+  // --------------------------------------------------------------------------
+  /**
+   * Check that there is 1 block wide border of air around the bounding box of
+   * the creature shape in all horizontal directions (but not above or below the
+   * bounding box).
+   * 
+   * The purpose of this is to prevent the use of Doppelganger spawning as a way
+   * top grief a pre-existing structure that was not build for the purpose of
+   * spawning a Doppelganger.
+   * 
+   * @param loc the Location of the final head block.
+   */
+  public boolean hasBorder(Location loc)
+  {
+    for (int i = 0; i < _border.size(); ++i)
+    {
+      Vector offset = _border.get(i);
+      int x = loc.getBlockX() + offset.getBlockX();
+      int y = loc.getBlockY() + offset.getBlockY();
+      int z = loc.getBlockZ() + offset.getBlockZ();
+      if (loc.getWorld().getBlockTypeIdAt(x, y, z) != 0)
+      {
+        return false;
+      }
+    }
+    return true;
+  } // hasBorder
 
   // --------------------------------------------------------------------------
   /**
@@ -340,6 +400,87 @@ public class CreatureShape
     int z = loc.getBlockZ() + offset.getBlockZ();
     return loc.getWorld().getBlockAt(x, y, z);
   }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Compute the offsets of the blocks in the border around the shape (including
+   * the head) which must be air in order for the creature to spawn.
+   */
+  protected void computeBorder()
+  {
+    _border.clear();
+
+    // Compute the bounds of the body shape relative to the head location.
+    int minX = 0, maxX = 0;
+    int minY = 0, maxY = 0;
+    int minZ = 0, maxZ = 0;
+    for (int i = 0; i < _offsets.size(); ++i)
+    {
+      int x = _offsets.get(i).getBlockX();
+      int y = _offsets.get(i).getBlockY();
+      int z = _offsets.get(i).getBlockZ();
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+    }
+
+    // Extend the bounded volume +/- one block in the X and Z dimensions only.
+    --minX;
+    ++maxX;
+    --minZ;
+    ++maxZ;
+
+    // Iterate over all offset coordinates in the bounded volume adding an entry
+    // to _border if the corresponding offset is not in _offsets. Iteration
+    // proceeds from the ground up on the basis that ground obstacles offer the
+    // earliest failure exit at creature spawn time.
+    for (int y = minY; y <= maxY; ++y)
+    {
+      for (int x = minX; x <= maxX; ++x)
+      {
+        for (int z = minZ; z <= maxZ; ++z)
+        {
+          if (!hasBodyOffset(x, y, z))
+          {
+            _border.add(new Vector(x, y, z));
+          }
+        }
+      }
+    }
+  } // computeBorder
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return true if the specified (x,y,z) offset from the head location is a
+   * body block.
+   * 
+   * This method is only called from computeBorder(), which happens only while
+   * the shape is being loaded.
+   * 
+   * @return true if the specified (x,y,z) offset from the head location is a
+   *         body block.
+   */
+  protected boolean hasBodyOffset(int x, int y, int z)
+  {
+    if (x == 0 && y == 0 && z == 0)
+    {
+      // Offset (0,0,0) is the head, explicitly precluded by loadFromSection().
+      return true;
+    }
+
+    for (int i = 0; i < _offsets.size(); ++i)
+    {
+      Vector o = _offsets.get(i);
+      if (x == o.getBlockX() && y == o.getBlockY() && z == o.getBlockZ())
+      {
+        return true;
+      }
+    }
+    return false;
+  } // hasBodyOffset
 
   // --------------------------------------------------------------------------
   /**
@@ -396,6 +537,12 @@ public class CreatureShape
    * element.
    */
   protected ArrayList<Vector>         _offsets     = new ArrayList<Vector>();
+
+  /**
+   * Offset relative to trigger block of all blocks around the shape that must
+   * be air. These are automatically computed when the configuration is loaded.
+   */
+  protected ArrayList<Vector>         _border      = new ArrayList<Vector>();
 
   /**
    * Manages weighted random selection of creature type name to spawn.

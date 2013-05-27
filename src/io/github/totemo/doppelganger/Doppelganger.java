@@ -83,7 +83,14 @@ public class Doppelganger extends JavaPlugin implements Listener
           {
             if (tryShape.isComplete(loc, placedItem.getTypeId()))
             {
-              shape = tryShape;
+              if (tryShape.hasBorder(loc))
+              {
+                shape = tryShape;
+              }
+              else
+              {
+                event.getPlayer().sendMessage(ChatColor.YELLOW + "You need a one block gap horizontally around the shape.");
+              }
               break;
             }
           } // for
@@ -104,18 +111,26 @@ public class Doppelganger extends JavaPlugin implements Listener
           CreatureShape shape = _creatureFactory.getCreatureShape(loc, event.getPlayer().getItemInHand());
           if (shape != null)
           {
-            String creatureType = shape.chooseCreatureType();
-            if (_creatureFactory.isValidCreatureType(creatureType))
+            if (shape.hasBorder(loc))
             {
-              doDoppelganger(doppelgangerName, creatureType, shape, event);
+              String creatureType = shape.chooseCreatureType();
+              if (_creatureFactory.isValidCreatureType(creatureType))
+              {
+                doDoppelganger(doppelgangerName, creatureType, shape, event);
+              }
+              else
+              {
+                getLogger().warning(
+                  String.format(
+                    Locale.US,
+                    "Player %s tried to spawn a doppelganger named %s at (%g,%g,%g) in %s of invalid type %s by building a %s.",
+                    event.getPlayer().getName(), doppelgangerName, loc.getX(), loc.getY(), loc.getZ(),
+                    world.getName(), creatureType, shape.getName()));
+              }
             }
             else
             {
-              getLogger().warning(
-                String.format(Locale.US,
-                  "Player %s tried to spawn a doppelganger named %s at (%g,%g,%g) in %s of invalid type %s by building a %s.",
-                  event.getPlayer().getName(), doppelgangerName, loc.getX(), loc.getY(), loc.getZ(),
-                  world.getName(), creatureType, shape.getName()));
+              event.getPlayer().sendMessage(ChatColor.YELLOW + "You need a one block gap horizontally around the shape.");
             }
           }
         }

@@ -84,8 +84,14 @@ public class CreatureFactory
         else
         {
           CreatureShape shape = CreatureShape.loadFromSection(shapesSection.getConfigurationSection(shapeName), logger);
-          _shapes.put(shapeName.toLowerCase(), shape);
-          // shape.dump(_plugin.getLogger());
+          if (shape == null)
+          {
+            logger.warning("Shape " + shapeName + " was not defined, due to errors in the configuration.");
+          }
+          else
+          {
+            _shapes.put(shapeName.toLowerCase(), shape);
+          }
         }
       }
     }
@@ -103,7 +109,11 @@ public class CreatureFactory
         else
         {
           CreatureType type = CreatureType.loadFromSection(creaturesSection.getConfigurationSection(creatureName), logger);
-          if (type != null)
+          if (type == null)
+          {
+            logger.warning("Creature " + creatureName + " was not defined, due to errors in the configuration.");
+          }
+          else
           {
             if (creatureName.equals(type.getCreatureType()))
             {
