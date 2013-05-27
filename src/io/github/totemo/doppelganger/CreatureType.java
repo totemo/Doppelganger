@@ -550,7 +550,7 @@ public class CreatureType
       }
       else
       {
-        int damage = section.getInt("damage", 1);
+        int damage = section.getInt("damage", 0);
         item = new ItemStack(material, 1, (short) damage);
 
         if (section.isList("enchantments"))
