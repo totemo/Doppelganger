@@ -30,9 +30,8 @@ public class Commands
   public Commands(Doppelganger plugin)
   {
     _plugin = plugin;
-    _help = new Help("Help", plugin.getLogger());
+    _help = new Help("Help", plugin);
   }
-
   // --------------------------------------------------------------------------
   /**
    * This method is called if none of the subcommands matches exactly.

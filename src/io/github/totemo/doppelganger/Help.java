@@ -1,16 +1,25 @@
 package io.github.totemo.doppelganger;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListResourceBundle;
+import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.java.JavaPlugin;
 
 // ----------------------------------------------------------------------------
 /**
@@ -31,114 +40,34 @@ public class Help
    * 
    * @param baseName the base name from which the name of the resource bundle
    *          will be generated.
-   * @param logger logs error messages.
+   * @param plugin the plugin.
    */
-  public Help(String baseName, Logger logger)
+  public Help(String baseName, JavaPlugin plugin)
   {
-    try
-    {
-      _bundle = ResourceBundle.getBundle(baseName);
-    }
-    catch (MissingResourceException ex)
-    {
-      // A default bundle should always be present.
-      logger.severe("Missing default help bundle, \"" + baseName + "\".");
-    }
-
     // Sometimes, when you recompile and reload,
     // PluginClassLoader.getResourceAsStream() returns null for everything,
     // and then ResourceBundle.getBundle() will throw
-    // MissingResourceException. So you know what...
+    // MissingResourceException. So simulating getBundle() instead.
+    try
+    {
+      URLClassLoader loader = (URLClassLoader) getClass().getClassLoader();
+      for (URL url : loader.getURLs())
+      {
+        // Probably only the Doppelgange.jar file in the URLs, but be safe.
+        URI uri = url.toURI();
+        if (uri.toString().contains(plugin.getName()))
+        {
+          _bundle = loadResourceBundle(new File(uri), Locale.getDefault(), baseName, plugin.getLogger());
+        }
+      }
+    }
+    catch (Exception ex)
+    {
+      // Handled by null check.
+    }
     if (_bundle == null)
     {
-      _bundle = new ListResourceBundle()
-      {
-        @Override
-        protected Object[][] getContents()
-        {
-          return new Object[][]{
-            {"topics", "help,info,coords,kill,spawn,maintain"},
-            {"help.variants", "1"},
-            {"help.1.usage", "&r&f/&6doppel help &f[&6info&f|&6coords&f|&6kill&f|&6spawn&f|&6maintain&f]"},
-            {"help.1.description", "&r&f    Show descriptions of &6/doppel &fsubcommands."},
-
-            {"info.variants", "list,shape,creature,player"},
-            {"info.header", "&r&eAlternatives:"},
-            {"info.list.usage", "&r&f/&6doppel info list"},
-            {"info.list.description", "&r&f    List the names of all shapes, creatures and summonable players."},
-            {"info.shape.usage", "&r&f/&6doppel info shape &d&oname"},
-            {"info.shape.description", "&r&f    Describe the named shape."},
-            {"info.creature.usage", "&r&f/&6doppel info creature &d&oname"},
-            {"info.creature.description", "&r&f    Describe the named creature type."},
-            {"info.player.usage", "&r&f/&6doppel info player &d&oname"},
-            {"info.player.description", "&r&f    Describe the named summonable player."},
-
-            {"coords.variants", "here,sphere,box"},
-            {"coords.header", "&r&eAlternatives:"},
-            {"coords.footer", "&r&eThe world name defaults to that of the player or command block if omitted."},
-            {"coords.here.usage", "&r&f/&6doppel coords sphere here &a&oradius &f[&d&oname&f]"},
-            {
-              "coords.here.description",
-              "&r&f    List coordinates of doppelgangers with the specified name in a sphere around the player or command block."},
-            {"coords.sphere.usage",
-              "&r&f/&6doppel coords sphere &f[&d&oworld&f] &a&ox y z radius &f[&d&oname&f]"},
-            {"coords.sphere.description",
-              "&r&f    List coordinates of doppelgangers with the specified name in a sphere."},
-            {"coords.box.usage",
-              "&r&f/&6doppel coords box &f[&d&oworld&f] &a&ox1 y1 z1 x2 y2 z2 &f[&d&oname&f]"},
-            {
-              "coords.box.description",
-              "&r    &fList coordinates of doppelgangers with the specified name in a box (x1,y1,z1) - (x2,y2,z2)."},
-            {"kill.variants", "here,sphere,box"},
-            {"kill.header", "&r&eAlternatives:"},
-            {"kill.footer",
-              "&r&eThe world name defaults to that of the player or command block if omitted."},
-            {"kill.here.usage", "&r&f/&6doppel kill sphere here &a&oradius &d&oname"},
-            {
-              "kill.here.description",
-              "&r&f    Kill all doppelgangers with the specified name in a sphere around the player or command block."},
-            {"kill.sphere.usage", "&r&f/&6doppel kill sphere &f[&d&oworld&f] &a&ox y z radius &d&oname"},
-            {"kill.sphere.description", "&r&f    Kill all doppelgangers with the specified name in a sphere."},
-            {"kill.box.usage", "&r&f/&6doppel kill box &f[&d&oworld&f] &a&ox1 y1 z1 x2 y2 z2 &d&oname"},
-            {"kill.box.description", "&r&f    Kill all doppelgangers with the specified name in a box (x1,y1,z1) - (x2,y2,z2)."},
-            {"spawn.variants", "here,at"},
-            {"spawn.header", "&r&eAlternatives:"},
-            {"spawn.footer",
-              "&r&eNote:\n" +
-                "&r&e* Anonymous doppelgangers cannot be found or killed by commands.\n" +
-                "&r&e* The world name defaults to that of the player or command block if omitted."},
-            {"spawn.here.usage", "&r&f/&6doppel spawn here &d&otype &f[&d&oname&f]"},
-            {
-              "spawn.here.description",
-              "&r&f    Spawn a doppelganger of the specified type, with optional name at the location of the player or command block issuing the command."},
-            {"spawn.at.usage",
-              "&r&f/&6doppel spawn at &f[&d&oworld&f] &a&ox y z &d&otype &f[&d&oname&f]"},
-            {
-              "spawn.at.description",
-              "&r&f    Spawn a doppelganger of the specified type, at the specified location, with optional name."},
-            {"maintain.variants", "box,sphere"},
-            {"maintain.header", "&r&eAlternatives:"},
-            {"maintain.footer",
-              "&r&eThe world name defaults to that of the player or command block if omitted."},
-            {
-              "maintain.box.usage",
-              "&r&f/&6doppel maintain at &f[&d&oworld&f] &a&ox y z &r&6box &f[&d&oworld&f] &a&ox1 y1 z1 x2 y2 z2 &d&otype name"},
-            {
-              "maintain.box.description",
-              "&r&f    Spawn a doppelganger with the specified name and type at (x,y,z) in the named world " +
-                "if there are no doppelgangers with that name and type in the box (x1,y1,z1) - (x2,y2,z2). If " +
-                "there is more than one doppelganger with that name in the box, kill all but the oldest one."},
-            {
-              "maintain.sphere.usage",
-              "&r&f/&6doppel maintain at &f[&d&oworld&f] &a&ox y z &r&6sphere &f[&d&oworld&f] &a&oxc yc zc radius &d&otype name"},
-            {
-              "maintain.sphere.description",
-              "&r&f    Spawn a doppelganger with the specified name and type at (x,y,z) in the named world if " +
-                "there are no doppelgangers with that name and type in the sphere whose centre is (xc,yc,zc).  " +
-                "If there is more than one doppelganger with that name in the sphere, kill all but the oldest one."}
-          };
-        }
-      };
+      plugin.getLogger().severe("Unable to load the help resources.");
     }
 
     List<String> topics = split(getString("topics"), ",");
@@ -238,6 +167,84 @@ public class Help
       return list;
     }
   } // split
+
+  // --------------------------------------------------------------------------
+  /**
+   * Implement a reasonable subset of ResourceBundle.getBundle() functionality
+   * for when a Bukkit reload breaks ClassLoader.getResourceAsStream().
+   * 
+   * @param pluginJarFile the plugin's JAR file to load from.
+   * @param local the locale to use when selecting the resource bundle.
+   * @param base the base name of the language resource properties file.
+   * @param logger logs messages
+   * @return the most specific available PropertyResourceBundle for the locale.
+   * @throws IOException on error.
+   */
+  protected ResourceBundle loadResourceBundle(File pluginJarFile, Locale locale, String base, Logger logger)
+    throws IOException
+  {
+    String lang = (locale.getLanguage().isEmpty()) ? "" : '_' + locale.getLanguage();
+    String script = (locale.getScript().isEmpty()) ? "" : '_' + locale.getScript();
+    String country = (locale.getCountry().isEmpty()) ? "" : '_' + locale.getCountry();
+    String variant = (locale.getVariant().isEmpty()) ? "" : '_' + locale.getVariant();
+
+    // Some of these may be duplicates and that's fine.
+    ArrayList<String> paths = new ArrayList<String>();
+    paths.add(base + lang + script + country + variant);
+    paths.add(base + lang + script + country);
+    paths.add(base + lang + script);
+    paths.add(base + lang + country + variant);
+    paths.add(base + lang + country);
+    paths.add(base + lang);
+    paths.add(base);
+
+    JarFile jar = null;
+    try
+    {
+      jar = new JarFile(pluginJarFile);
+      for (String path : paths)
+      {
+        String propertiesFile = path + ".properties";
+        ResourceBundle bundle = loadResourceBundle(jar, propertiesFile);
+        if (bundle != null)
+        {
+          logger.fine("Loaded help from " + pluginJarFile.getName() + "/" + propertiesFile);
+          return bundle;
+        }
+      }
+    }
+    finally
+    {
+      if (jar != null)
+      {
+        jar.close();
+      }
+    }
+    return null;
+  } // loadResourceBundle
+
+  // --------------------------------------------------------------------------
+  /**
+   * Attempt to load the specified resource from the JAR file.
+   * 
+   * @param jar the open JAR file.
+   * @param path the path to the resource.
+   * @return a new PropertyResourceBundle if successful, or null if the path did
+   *         not match a resource.
+   */
+  protected ResourceBundle loadResourceBundle(JarFile jar, String path)
+    throws IOException
+  {
+    ZipEntry entry = jar.getEntry(path);
+    if (entry != null)
+    {
+      return new PropertyResourceBundle(jar.getInputStream(entry));
+    }
+    else
+    {
+      return null;
+    }
+  }
 
   // --------------------------------------------------------------------------
   /**
