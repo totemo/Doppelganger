@@ -84,7 +84,6 @@ shapes:
     - weight: 1.0
       spawn: SpecialCow
 
-
   wool_quadruped_ew:
     head: skull_item
     body:
@@ -135,6 +134,7 @@ shapes:
       spawn: FlyingPig
     - weight: 1.0
       spawn: FlyingSquid
+
 
 creatures:
   SpecialBat:
@@ -249,7 +249,6 @@ creatures:
 
   InvisibleBat:
     spawn: Bat
-    sound: wither_spawn
     potions:
     - type: invisibility
       ambient: false
