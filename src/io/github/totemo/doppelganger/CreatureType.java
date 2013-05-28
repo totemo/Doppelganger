@@ -16,6 +16,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -381,51 +382,11 @@ public class CreatureType
       }
     }
 
-    if (_helmet != null)
-    {
-      sender.sendMessage(ChatColor.GOLD + "    Helmet: " + ChatColor.YELLOW + getItemDescription(_helmet));
-    }
-    if (_helmetDropChance != null)
-    {
-      sender.sendMessage(String.format("%s    Helmet drop chance: %s%.2f%%",
-        ChatColor.GOLD, ChatColor.YELLOW, 100 * _helmetDropChance));
-    }
-    if (_chestPlate != null)
-    {
-      sender.sendMessage(ChatColor.GOLD + "    Chest plate: " + ChatColor.YELLOW + getItemDescription(_chestPlate));
-    }
-    if (_chestPlateDropChance != null)
-    {
-      sender.sendMessage(String.format("%s    Chest plate drop chance: %s%.2f%%",
-        ChatColor.GOLD, ChatColor.YELLOW, 100 * _chestPlateDropChance));
-    }
-    if (_leggings != null)
-    {
-      sender.sendMessage(ChatColor.GOLD + "    Leggings: " + ChatColor.YELLOW + getItemDescription(_leggings));
-    }
-    if (_leggingsDropChance != null)
-    {
-      sender.sendMessage(String.format("%s    Leggings drop chance: %s%.2f%%",
-        ChatColor.GOLD, ChatColor.YELLOW, 100 * _leggingsDropChance));
-    }
-    if (_boots != null)
-    {
-      sender.sendMessage(ChatColor.GOLD + "    Boots: " + ChatColor.YELLOW + getItemDescription(_boots));
-    }
-    if (_bootsDropChance != null)
-    {
-      sender.sendMessage(String.format("%s    Boots drop chance: %s%.2f%%",
-        ChatColor.GOLD, ChatColor.YELLOW, 100 * _bootsDropChance));
-    }
-    if (_weapon != null)
-    {
-      sender.sendMessage(ChatColor.GOLD + "    Weapon: " + ChatColor.YELLOW + getItemDescription(_weapon));
-    }
-    if (_weaponDropChance != null)
-    {
-      sender.sendMessage(String.format("%s    Weapon drop chance: %s%.2f%%",
-        ChatColor.GOLD, ChatColor.YELLOW, 100 * _weaponDropChance));
-    }
+    describeItem(sender, "    Helmet: ", _helmet, _helmetDropChance);
+    describeItem(sender, "    Chest plate: ", _chestPlate, _chestPlateDropChance);
+    describeItem(sender, "    Leggings: ", _leggings, _leggingsDropChance);
+    describeItem(sender, "    Boots: ", _boots, _bootsDropChance);
+    describeItem(sender, "    Weapon: ", _weapon, _weaponDropChance);
     if (_maxEscorts > 0)
     {
       sender.sendMessage(String.format(
@@ -446,39 +407,71 @@ public class CreatureType
 
   // --------------------------------------------------------------------------
   /**
-   * Return a human-readable description of the specified item, suitable for use
-   * in describe().
+   * Send a human-readable description of the specified item to the command
+   * sender.
    * 
+   * This method is called by describe().
+   * 
+   * @param sender the actor issuing the command and receiving output.
+   * @param heading the heading of the description.
    * @param item the (assumed non-null) item to describe.
-   * @reutrn the description.
+   * @param dropChance the chance of dropping the item, in the range [0.0,1.0],
+   *          nominally.
    */
-  protected String getItemDescription(ItemStack item)
+  protected static void describeItem(CommandSender sender, String heading, ItemStack item, Double dropChance)
   {
-    StringBuilder desc = new StringBuilder();
-    desc.append(item.getType().toString());
-    desc.append(", durability ");
-    desc.append(item.getDurability());
-
-    Map<Enchantment, Integer> enchants = item.getEnchantments();
-    if (enchants != null && enchants.size() != 0)
+    if (item != null || dropChance != null)
     {
-      desc.append(" (");
-      int i = 1;
-      for (Entry<Enchantment, Integer> enchant : enchants.entrySet())
+      sender.sendMessage(ChatColor.GOLD + heading);
+      if (item != null)
       {
-        desc.append(enchant.getKey().getName());
-        desc.append(' ');
-        desc.append(enchant.getValue());
-        if (i < enchants.size())
+        sender.sendMessage(String.format("        %sItem: %s%s, durability %d",
+          ChatColor.GOLD, ChatColor.YELLOW, item.getType().toString(), item.getDurability()));
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta.hasDisplayName())
         {
-          desc.append(", ");
+          sender.sendMessage(String.format("        %sName: %s%s",
+            ChatColor.GOLD, ChatColor.YELLOW, meta.getDisplayName()));
         }
-        ++i;
+        if (meta.hasLore())
+        {
+          sender.sendMessage(ChatColor.GOLD + "        Lore:");
+          for (String lore : meta.getLore())
+          {
+            sender.sendMessage(ChatColor.YELLOW + "            " + lore);
+          }
+        }
+        Map<Enchantment, Integer> enchants = item.getEnchantments();
+        if (enchants != null && enchants.size() != 0)
+        {
+          StringBuilder desc = new StringBuilder();
+          desc.append(ChatColor.GOLD);
+          desc.append("        Enchantments: ");
+          desc.append(ChatColor.YELLOW);
+          int i = 1;
+          for (Entry<Enchantment, Integer> enchant : enchants.entrySet())
+          {
+            desc.append(enchant.getKey().getName());
+            desc.append(' ');
+            desc.append(enchant.getValue());
+            if (i < enchants.size())
+            {
+              desc.append(", ");
+            }
+            ++i;
+          }
+          sender.sendMessage(desc.toString());
+        }
       }
-      desc.append(")");
+
+      if (dropChance != null)
+      {
+        sender.sendMessage(String.format("%s        Drop chance: %s%.2f%%",
+          ChatColor.GOLD, ChatColor.YELLOW, 100 * dropChance));
+      }
     }
-    return desc.toString();
-  } // getItemDescription
+  } // describeItem
 
   // --------------------------------------------------------------------------
   /**
@@ -547,54 +540,64 @@ public class CreatureType
       if (material == null)
       {
         logger.warning(section.getCurrentPath() + " has invalid item type.");
+        return null;
       }
-      else
-      {
-        int damage = section.getInt("damage", 0);
-        item = new ItemStack(material, 1, (short) damage);
 
-        if (section.isList("enchantments"))
+      int damage = Math.max(0, section.getInt("damage", 0));
+      item = new ItemStack(material, 1, (short) damage);
+      ItemMeta meta = item.getItemMeta();
+      String name = section.getString("name");
+      if (name != null)
+      {
+        meta.setDisplayName(name);
+      }
+      if (section.isList("lore"))
+      {
+        meta.setLore(section.getStringList("lore"));
+      }
+      item.setItemMeta(meta);
+
+      if (section.isList("enchantments"))
+      {
+        try
         {
-          try
+          List<Map<?, ?>> enchantments = section.getMapList("enchantments");
+          for (int i = 0; i < enchantments.size(); ++i)
           {
-            List<Map<?, ?>> enchantments = section.getMapList("enchantments");
-            for (int i = 0; i < enchantments.size(); ++i)
+            try
             {
-              try
-              {
-                ConfigMap map = new ConfigMap(enchantments.get(i), logger,
+              ConfigMap map = new ConfigMap(enchantments.get(i), logger,
                                               section.getCurrentPath() + " enchantment " + i);
-                String typeName = map.getString("type", null);
-                if (typeName == null)
+              String typeName = map.getString("type", null);
+              if (typeName == null)
+              {
+                logger.warning("Enchantment " + i + " has no type specified.");
+              }
+              else
+              {
+                Enchantment type = Enchantment.getByName(typeName.toUpperCase());
+                if (type == null)
                 {
-                  logger.warning("Enchantment " + i + " has no type specified.");
+                  logger.warning(typeName + " is not a valid enchantment type.");
                 }
                 else
                 {
-                  Enchantment type = Enchantment.getByName(typeName.toUpperCase());
-                  if (type == null)
-                  {
-                    logger.warning(typeName + " is not a valid enchantment type.");
-                  }
-                  else
-                  {
-                    item.addEnchantment(type, map.getInteger("level", 1));
-                  }
+                  item.addEnchantment(type, map.getInteger("level", 1));
                 }
               }
-              catch (Exception ex)
-              {
-                logger.warning(ex.getClass().getName() + " defining enchantment " +
+            }
+            catch (Exception ex)
+            {
+              logger.warning(ex.getClass().getName() + " defining enchantment " +
                                i + " for " + section.getCurrentPath());
-              }
-            } // for
-          }
-          catch (Exception ex)
-          {
-            logger.warning(ex.getClass().getName() + " loading enchantments for " + section.getCurrentPath());
-          }
+            }
+          } // for
         }
-      }
+        catch (Exception ex)
+        {
+          logger.warning(ex.getClass().getName() + " loading enchantments for " + section.getCurrentPath());
+        }
+      } // if enchanted
     }
     return item;
   } // loadItem

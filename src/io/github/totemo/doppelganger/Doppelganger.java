@@ -179,7 +179,7 @@ public class Doppelganger extends JavaPlugin implements Listener
       String playerNameOfHead = (type != null && type.getMask() != null) ? type.getMask() : name;
       if (playerNameOfHead != null && playerNameOfHead.length() != 0)
       {
-        doppelganger.getEquipment().setHelmet(getPlayerHead(playerNameOfHead));
+        setPlayerHead(doppelganger, playerNameOfHead);
       }
     }
 
@@ -247,20 +247,29 @@ public class Doppelganger extends JavaPlugin implements Listener
 
   // --------------------------------------------------------------------------
   /**
-   * Return an ItemStack containing the head of the specified player.
+   * Ensure that the doppelganger is wearing the specified player's head.
    * 
-   * @param name the name of the player.
-   * @return an ItemStack containing the head of the specified player.
+   * If the creature was configured to be wearing a skull as a helmet, customise
+   * that skull item so that settings from the configuation are retained.
+   * 
+   * @param doppelganger the creature.
+   * @param name the name of the player whose head will be worn.
    */
-  protected static ItemStack getPlayerHead(String name)
+  protected static void setPlayerHead(LivingEntity doppelganger, String name)
   {
-    ItemStack stack = new ItemStack(Material.SKULL_ITEM, 1);
-    stack.setDurability((short) 3);
-    SkullMeta meta = (SkullMeta) stack.getItemMeta();
+    ItemStack helmet = doppelganger.getEquipment().getHelmet();
+    if (helmet == null || helmet.getType() != Material.SKULL_ITEM)
+    {
+      helmet = new ItemStack(Material.SKULL_ITEM, 1);
+    }
+
+    SkullMeta meta = (SkullMeta) helmet.getItemMeta();
     meta.setOwner(name);
-    stack.setItemMeta(meta);
-    return stack;
-  }
+    helmet.setItemMeta(meta);
+    // Player heads are damage value 3.
+    helmet.setDurability((short) 3);
+    doppelganger.getEquipment().setHelmet(helmet);
+  } // setPlayerHead
 
   // --------------------------------------------------------------------------
   /**

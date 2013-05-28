@@ -171,18 +171,25 @@ creatures:
     - type: increase_damage
       amplifier: 2
     helmet:
+      item: skull_item
+      damage: 1
+      name: The head of a foul beast.
+      lore:
+      - "This creature was summoned by magic from the darkest depths."
+      - "The holder of this grotesque trophy is destined for greatness."
       dropchance: 1.0
     chestplate:
       item: diamond_chestplate
-      damage: 3
       dropchance: 0.0
     leggings:
       item: diamond_leggings
-      damage: 3
       dropchance: 0.0
     weapon:
       item: diamond_sword
-      dropchance: 0.0
+      name: Witherwell
+      lore:
+      - "The abysmal blade."
+      dropchance: 1.0
 
   ToughSkeleton:
     spawn: Skeleton
@@ -316,7 +323,9 @@ creatures:
     sound: wither_spawn
     helmet:
       item: skull_item
-      dropchance: 1.0
+      lore:
+      - "From this small container sprung an entire universe."
+      dropchance: 1.0001
     chestplate:
       item: diamond_chestplate
       damage: 3
@@ -333,13 +342,23 @@ creatures:
         level: 4
     weapon:
       item: diamond_sword
+      name: Whittlebone
+      lore:
+      - "The mighty sword of the great Notch."
+      - "Wield it well."
       damage: 50
-      dropchance: 0.05
+      dropchance: 1.0001
       enchantments:
       - type: damage_all
         level: 5
       - type: fire_aspect
         level: 2
+    boots:
+      item: tripwire_hook
+      name: The Key of Notch
+      lore:
+      - "The path ahead is now clear."
+      dropchance: 1.0001
     escorts:
       min: 3
       max: 8
