@@ -53,6 +53,8 @@ public class Doppelganger extends JavaPlugin implements Listener
    * 
    * Checks that a named item is stacked on a configured shape made of blocks of
    * the requisite material.
+   * 
+   * @param event the event.
    */
   @EventHandler(ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event)
@@ -221,8 +223,8 @@ public class Doppelganger extends JavaPlugin implements Listener
     Location groundLocation = loc.clone();
     groundLocation.add(0.5, shape.getGroundOffset(), 0.5);
     // TODO: allow a customisable offset above the computed ground position.
-    // The doppelganger mob.
 
+    // The doppelganger mob.
     LivingEntity doppelganger = spawnDoppelganger(creatureType, doppelgangerName, groundLocation);
     if (doppelganger == null)
     {
@@ -259,7 +261,7 @@ public class Doppelganger extends JavaPlugin implements Listener
   /**
    * Pattern describing allowable doppelganger names.
    */
-  protected Pattern         _namePattern     = Pattern.compile("^(?:\\w|_)+$");
+  protected Pattern         _namePattern     = Pattern.compile("^\\w+$");
 
   /**
    * Handles creation of creatures.
