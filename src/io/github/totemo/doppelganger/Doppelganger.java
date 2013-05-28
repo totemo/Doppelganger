@@ -60,6 +60,11 @@ public class Doppelganger extends JavaPlugin implements Listener
   public void onBlockPlace(BlockPlaceEvent event)
   {
     ItemStack placedItem = event.getItemInHand();
+    if (!placedItem.hasItemMeta())
+    {
+      return;
+    }
+
     ItemMeta meta = placedItem.getItemMeta();
     if (meta.hasDisplayName())
     {
