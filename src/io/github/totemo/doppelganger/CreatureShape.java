@@ -360,10 +360,11 @@ public class CreatureShape
    * bounding box).
    * 
    * The purpose of this is to prevent the use of Doppelganger spawning as a way
-   * top grief a pre-existing structure that was not build for the purpose of
+   * to grief a pre-existing structure that was not built for the purpose of
    * spawning a Doppelganger.
    * 
    * @param loc the Location of the final head block.
+   * @return true if the required border is present around the shape.
    */
   public boolean hasBorder(Location loc)
   {
