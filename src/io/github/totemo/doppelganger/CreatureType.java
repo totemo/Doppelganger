@@ -16,6 +16,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
@@ -563,15 +564,38 @@ public class CreatureType
       int damage = Math.max(0, section.getInt("damage", 0));
       item = new ItemStack(material, 1, (short) damage);
       ItemMeta meta = item.getItemMeta();
-      String name = section.getString("name");
+      String name = translate(section.getString("name"));
       if (name != null)
       {
         meta.setDisplayName(name);
       }
-      if (section.isList("lore"))
+      List<String> lore = section.getStringList("lore");
+      if (lore != null)
       {
-        meta.setLore(section.getStringList("lore"));
+        ArrayList<String> translatedLore = new ArrayList<String>();
+        for (String line : lore)
+        {
+          translatedLore.add(translate(line));
+        }
+        meta.setLore(translatedLore);
       }
+
+      // Load additional customisation specific to books.
+      if (material == Material.BOOK_AND_QUILL || material == Material.WRITTEN_BOOK)
+      {
+        BookMeta bookMeta = (BookMeta) meta;
+        bookMeta.setTitle(translate(section.getString("title", "")));
+        bookMeta.setAuthor(translate(section.getString("author", "")));
+        List<String> pages = section.getStringList("pages");
+        if (pages != null)
+        {
+          for (String page : pages)
+          {
+            bookMeta.addPage(translate(page));
+          }
+        }
+      }
+
       item.setItemMeta(meta);
 
       if (section.isList("enchantments"))
@@ -709,6 +733,22 @@ public class CreatureType
     Location loc = centre.clone();
     loc.add(dx, 0, dz);
     return loc;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Translate colour and formatting codes preceded by ampersand and replace
+   * C-style backslash escape sequences for \n with that characters.
+   * 
+   * The game currently doesn't understand \t (tabs), so they are not supported.
+   * 
+   * @param text the text to translate; can be null.
+   * @return the translated text. If the text parameter was null, return null.
+   */
+  protected static String translate(String text)
+  {
+    return (text == null) ? null :
+      ChatColor.translateAlternateColorCodes('&', text.replaceAll("\\\\n", "\n"));
   }
 
   // --------------------------------------------------------------------------

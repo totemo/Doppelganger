@@ -345,8 +345,8 @@ creatures:
       item: diamond_sword
       name: Whittlebone
       lore:
-      - "The mighty sword of the great Notch."
-      - "Wield it well."
+      - "&fThe mighty sword of the great &eNotch."
+      - "&9Wield it well."
       damage: 50
       dropchance: 1.0001
       enchantments:
@@ -355,10 +355,18 @@ creatures:
       - type: fire_aspect
         level: 2
     boots:
-      item: tripwire_hook
-      name: The Key of Notch
+#      item: tripwire_hook
+#      name: The Key of Notch
+#      lore:
+#      - "The path ahead is now clear."
+      item: written_book
+      title: "&6The Book of Notch"
+      author: "&cNotch"
       lore:
-      - "The path ahead is now clear."
+      - "&4&oDo you dare to read it?"
+      pages:
+      - "&4Rhubarb.\nRhubarb.\nRhubarb.\nRhubarb.\nRhubarb.\n\n..."
+      - "&6Custard."
       dropchance: 1.0001
     escorts:
       min: 3
@@ -391,6 +399,16 @@ creatures:
       enchantments:
       - type: protection_environmental
         level: 4
+    boots:
+      item: written_book
+      lore:
+      - "&4&oA mysterious tome of great power."
+      name: "&1The Book of jeb_"
+      author: "&2jeb_"
+      pages:
+      - "&6Beware oh reader, this is not a tale taken lightly.\n\n&cThis book holds great power for good or for evil."
+      - "&4And stuff like that.\n\n\n&5THE END."
+      dropchance: 1.0001
     weapon:
       item: diamond_sword
       dropchance: 0.05
