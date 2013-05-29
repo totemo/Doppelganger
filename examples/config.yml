@@ -154,6 +154,7 @@ creatures:
     lightning:
       min: 1
     despawns: false
+    invulnerableticks: 1200
 
   ToughWitherSkeleton:
     spawn: WitherSkeleton

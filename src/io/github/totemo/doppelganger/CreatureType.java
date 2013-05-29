@@ -80,6 +80,10 @@ public class CreatureType
       {
         type._air = Math.max(0, section.getInt("air"));
       }
+      if (section.isSet("invulnerableticks"))
+      {
+        type._invulnerableTicks = Math.max(0, section.getInt("invulnerableticks"));
+      }
 
       String soundName = section.getString("sound");
       try
@@ -283,6 +287,15 @@ public class CreatureType
     {
       entity.setMaximumAir(_air);
     }
+    if (_invulnerableTicks != null)
+    {
+      // NoDamageTicks is decremented by 1 per tick.
+      // After damage, damage will not be allowed again until:
+      // NoDamageTicks < MaximumNoDamageTicks / 2 && damage > LastDamage
+      entity.setMaximumNoDamageTicks(2 * _invulnerableTicks);
+      entity.setNoDamageTicks(2 * _invulnerableTicks);
+      entity.setLastDamage(Integer.MAX_VALUE);
+    }
     if (_despawns != null)
     {
       entity.setRemoveWhenFarAway(_despawns);
@@ -347,6 +360,10 @@ public class CreatureType
     if (_air != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Air: " + ChatColor.YELLOW + _air + " ticks");
+    }
+    if (_invulnerableTicks != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Invulnerability: " + ChatColor.YELLOW + _invulnerableTicks + " ticks");
     }
     if (_despawns != null)
     {
@@ -729,6 +746,12 @@ public class CreatureType
    * configuration.
    */
   protected Integer                   _air;
+
+  /**
+   * The number of ticks for which this creature will be invulnerable after
+   * being spawned.
+   */
+  protected Integer                   _invulnerableTicks;
 
   /**
    * True if the creature will despawn when the player is too far away. Null if
