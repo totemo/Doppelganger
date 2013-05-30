@@ -473,6 +473,13 @@ creatures:
     helmet:
       item: skull_item
       dropchance: 0.5
+    boots:
+      item: map
+      name: Yarwig's Map
+      lore:
+      - "Wihout this, you will surely die."
+      damage: 0
+      dropchance: 1.0001
     weapon:
       dropchance: 0.05
       item: diamond_sword
