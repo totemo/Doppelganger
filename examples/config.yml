@@ -236,6 +236,8 @@ creatures:
       item: diamond_sword
 
   MolonMan:
+    defaultname: Minion
+    keephelmet: true
     spawn: Skeleton
     sound: ambience_cave
     helmet:
@@ -245,6 +247,8 @@ creatures:
       dropchance: 0.01
 
   MolonMan2:
+    defaultname: Henchman
+    keephelmet: true
     spawn: Skeleton
     sound: ambience_cave
     helmet:
@@ -314,6 +318,7 @@ creatures:
         level: 1
 
   Notch:
+    defaultname: Notch
     health: 80
     air: 72000
     spawn: ToughWitherSkeleton
@@ -378,6 +383,7 @@ creatures:
         spawn: FlyingSkull
 
   jeb_:
+    defaultname: jeb_
     health: 60
     air: 72000
     spawn: ToughWitherSkeleton
@@ -428,6 +434,7 @@ creatures:
         spawn: ToughWitherSkeletonOnSpider
 
   Dinnerbone:
+    defaultname: Dinnerbone
     health: 80
     spawn: ToughSkeleton
     despawns: false
@@ -460,6 +467,7 @@ creatures:
         spawn: ToughSkeleton
 
   Villain:
+    defaultname: Villain
     health: 100
     spawn: ToughWitherSkeleton
     despawns: false

@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -17,6 +18,7 @@ import org.bukkit.entity.Pig;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
 // --------------------------------------------------------------------------
 /**
@@ -370,12 +372,18 @@ public class CreatureFactory
    * This method originally returned a Creature, but Bats are Ambient mobs. The
    * next common base class is LivingEntity.
    * 
+   * If the creature type has a mask, then the creature will wear that player's
+   * head, irrespective of the creature's name. If a name is not specified, then
+   * the default name from the configuration will be used. If the original name
+   * specified is non-empty, or a valid default is provided, the name plate will
+   * be displayed.
+   * 
    * @param creatureType the EntityType.getName() value specifying the creature
    *          type; case-insensitive, or "WitherSkeleton". Null or the empty
    *          string will result in no spawned creature.
    * @param loc the spawn location (block above ground level).
-   * @param name the custom name to assign and display; not set or shown if null
-   *          of the empty string.
+   * @param name the custom name to assign and display; if null/empty, the
+   *          default name from the creature type is used.
    * @param plugin the Plugin, used to schedule future events for special
    *          effects.
    * @return the spawned LivingEntity, or null if nothing was spawned.
@@ -442,17 +450,58 @@ public class CreatureFactory
     // Whether a special type or not, name it.
     if (livingEntity != null)
     {
-      if (name != null && name.length() != 0)
+      // Use the configured default name if no name is specified.
+      String usedName = ((name == null || name.length() == 0) && type != null)
+        ? type.getDefaultName() : name;
+      if (usedName != null && usedName.length() != 0)
       {
         // TODO: Allow custom prefix and/or suffix.
         // TODO: Possibly allow prefix/suffix to indicate creator/owner of
         // creature.
-        livingEntity.setCustomName(name);
+        livingEntity.setCustomName(usedName);
         livingEntity.setCustomNameVisible(true);
+      }
+
+      // Make the doppelganger wear the player head or type-specific mask,
+      // unless blocked by the keephelmet setting.
+      if (type == null || !type.getKeepHelmet())
+      {
+        String playerNameOfHead = (type != null && type.getMask() != null)
+          ? type.getMask() : usedName;
+        if (playerNameOfHead != null && playerNameOfHead.length() != 0)
+        {
+          setPlayerHead(livingEntity, playerNameOfHead);
+        }
       }
     }
     return livingEntity;
   } // spawnCreature
+
+  // --------------------------------------------------------------------------
+  /**
+   * Ensure that the doppelganger is wearing the specified player's head.
+   * 
+   * If the creature was configured to be wearing a skull as a helmet, customise
+   * that skull item so that settings from the configuration are retained.
+   * 
+   * @param doppelganger the creature.
+   * @param name the name of the player whose head will be worn.
+   */
+  protected static void setPlayerHead(LivingEntity doppelganger, String name)
+  {
+    ItemStack helmet = doppelganger.getEquipment().getHelmet();
+    if (helmet == null || helmet.getType() != Material.SKULL_ITEM)
+    {
+      helmet = new ItemStack(Material.SKULL_ITEM, 1);
+    }
+
+    SkullMeta meta = (SkullMeta) helmet.getItemMeta();
+    meta.setOwner(name);
+    helmet.setItemMeta(meta);
+    // Player heads are damage value 3.
+    helmet.setDurability((short) 3);
+    doppelganger.getEquipment().setHelmet(helmet);
+  } // setPlayerHead
 
   // --------------------------------------------------------------------------
   /**

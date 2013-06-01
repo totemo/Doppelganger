@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.LivingEntity;
@@ -16,7 +15,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.amoebaman.kitmaster.utilities.CommandController;
@@ -164,27 +162,17 @@ public class Doppelganger extends JavaPlugin implements Listener
    * @param name the name to show on the name tag. This is also the name of the
    *          player whose head will be worn, unless the creature type includes
    *          a specific mask override. If the name is null or the empty string,
-   *          no name tag will be set and no player head will be worn.
+   *          the name defaults to the default name set in the creature type.
+   *          If, after the default name is taken into account, the name is
+   *          still null or empty, no name tag will be set and no player head
+   *          will be worn.
    * @param loc the Location on the ground where the creature will spawn.
    * @return the spawned LivingEntity, or null if it could not be spawned.
    */
   public LivingEntity spawnDoppelganger(String creatureType, String name, Location loc)
   {
-    // If a custom creature, do configured special effects.
-    LivingEntity doppelganger = _creatureFactory.spawnCreature(creatureType, loc, name, this);
-    if (doppelganger != null)
-    {
-      // Make the doppelganger wear the player head or type-specific mask.
-      CreatureType type = _creatureFactory.getCreatureType(creatureType);
-      String playerNameOfHead = (type != null && type.getMask() != null) ? type.getMask() : name;
-      if (playerNameOfHead != null && playerNameOfHead.length() != 0)
-      {
-        setPlayerHead(doppelganger, playerNameOfHead);
-      }
-    }
-
-    return doppelganger;
-  } // spawnDoppelganger
+    return _creatureFactory.spawnCreature(creatureType, loc, name, this);
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -244,32 +232,6 @@ public class Doppelganger extends JavaPlugin implements Listener
       ((Creature) doppelganger).setTarget(event.getPlayer());
     }
   } // doDoppelganger
-
-  // --------------------------------------------------------------------------
-  /**
-   * Ensure that the doppelganger is wearing the specified player's head.
-   * 
-   * If the creature was configured to be wearing a skull as a helmet, customise
-   * that skull item so that settings from the configuation are retained.
-   * 
-   * @param doppelganger the creature.
-   * @param name the name of the player whose head will be worn.
-   */
-  protected static void setPlayerHead(LivingEntity doppelganger, String name)
-  {
-    ItemStack helmet = doppelganger.getEquipment().getHelmet();
-    if (helmet == null || helmet.getType() != Material.SKULL_ITEM)
-    {
-      helmet = new ItemStack(Material.SKULL_ITEM, 1);
-    }
-
-    SkullMeta meta = (SkullMeta) helmet.getItemMeta();
-    meta.setOwner(name);
-    helmet.setItemMeta(meta);
-    // Player heads are damage value 3.
-    helmet.setDurability((short) 3);
-    doppelganger.getEquipment().setHelmet(helmet);
-  } // setPlayerHead
 
   // --------------------------------------------------------------------------
   /**

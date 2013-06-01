@@ -69,6 +69,11 @@ public class CreatureType
       CreatureType type = new CreatureType(section.getName(), spawn);
       type._mount = section.getString("mount", null);
       type._mask = section.getString("mask", null);
+      type._defaultName = section.getString("defaultname", null);
+      if (section.isSet("keephelmet"))
+      {
+        type._keepHelmet = section.getBoolean("keephelmet", false);
+      }
       if (section.isSet("despawns"))
       {
         type._despawns = section.getBoolean("despawns", false);
@@ -216,6 +221,36 @@ public class CreatureType
   public String getMask()
   {
     return _mask;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return the default name tag to give this creature if no name is specified
+   * when it spawns - either because it was spawned anonymous by command, or
+   * because it was spawned as an escort mob.
+   * 
+   * @return the default name of this creature if not specified.
+   */
+  public String getDefaultName()
+  {
+    return _defaultName;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return true if the creature should keep wearing whatever helmet it was
+   * configured with rather than wearing the player head corresponding to its
+   * name or mask.
+   * 
+   * If this is false (the default), a name or mask will force the creature to
+   * wear that player's head.
+   * 
+   * @return the default name of this creature if not specified.
+   */
+  public boolean getKeepHelmet()
+  {
+    // If unset, default to false.
+    return (_keepHelmet != null) && _keepHelmet;
   }
 
   // --------------------------------------------------------------------------
@@ -377,6 +412,15 @@ public class CreatureType
     if (getMask() != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Mask: " + ChatColor.YELLOW + getMask());
+    }
+    if (getDefaultName() != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Default name: " + ChatColor.YELLOW + getDefaultName());
+    }
+    // Bypass the getKeepHelmet() method to only show this when set.
+    if (_keepHelmet != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Keep helmet: " + ChatColor.YELLOW + getKeepHelmet());
     }
     if (_sound != null)
     {
@@ -775,6 +819,26 @@ public class CreatureType
    * the configuration.
    */
   protected String                    _mask;
+
+  /**
+   * The name to give the creature (and display as a nameplate) if none is
+   * specified. Null if not set in the configuration.
+   */
+  protected String                    _defaultName;
+
+  /**
+   * If true, having a name does not make the creature wear that player's head.
+   * Instead it will keep whatever helmet it was configured with. If false (the
+   * default if omitted), the creature will wear a player's head if given a
+   * name.
+   * 
+   * The "keephelmet:" configuration setting takes precedence over the "mask:"
+   * setting when both are specified.
+   * 
+   * Store a Boolean rather than boolean, so we can keep track of whether a
+   * value was explicitly specified in the configuration, for describe().
+   */
+  protected Boolean                   _keepHelmet;
 
   /**
    * Maximum health in half-hearts. Null if not set in the configuration.
