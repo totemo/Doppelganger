@@ -388,6 +388,10 @@ public class CreatureType
   public void describe(CommandSender sender)
   {
     sender.sendMessage(ChatColor.GOLD + "Creature " + getName() + ":");
+    if (getDefaultName() != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Default name: " + ChatColor.YELLOW + getDefaultName());
+    }
     sender.sendMessage(ChatColor.GOLD + "    Spawn: " + ChatColor.YELLOW + getCreatureType());
     if (_health != null)
     {
@@ -412,10 +416,6 @@ public class CreatureType
     if (getMask() != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Mask: " + ChatColor.YELLOW + getMask());
-    }
-    if (getDefaultName() != null)
-    {
-      sender.sendMessage(ChatColor.GOLD + "    Default name: " + ChatColor.YELLOW + getDefaultName());
     }
     // Bypass the getKeepHelmet() method to only show this when set.
     if (_keepHelmet != null)
