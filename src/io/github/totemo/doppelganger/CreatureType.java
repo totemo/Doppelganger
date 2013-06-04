@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -18,6 +19,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -639,6 +641,30 @@ public class CreatureType
           }
         }
       }
+      else if (material == Material.LEATHER_HELMET ||
+               material == Material.LEATHER_CHESTPLATE ||
+               material == Material.LEATHER_LEGGINGS ||
+               material == Material.LEATHER_BOOTS)
+      {
+        List<Integer> rgbValues = section.getIntegerList("rgb");
+        if (rgbValues.size() == 3)
+        {
+          int red = rgbValues.get(0);
+          int green = rgbValues.get(1);
+          int blue = rgbValues.get(2);
+          if (checkInteger(logger, "red", red, 0, 255) &&
+              checkInteger(logger, "green", green, 0, 255) &&
+              checkInteger(logger, "blue", blue, 0, 255))
+          {
+            LeatherArmorMeta armourMeta = (LeatherArmorMeta) meta;
+            armourMeta.setColor(Color.fromRGB(red, green, blue));
+          }
+        }
+        else
+        {
+          logger.warning("The rgb value should be a list of three integers in the range [0,255].");
+        }
+      }
 
       item.setItemMeta(meta);
 
@@ -686,6 +712,26 @@ public class CreatureType
     }
     return item;
   } // loadItem
+  // --------------------------------------------------------------------------
+  /**
+   * Log a warning message if the value is not in the range [min,max].
+   * 
+   * @param logger the logger.
+   * @param name the name used to describe the value in the message.
+   * @param value the value.
+   * @param min the minimum allowed value.
+   * @param max the maximum allowed value.
+   * @return true if the value is in the range.
+   */
+  protected static boolean checkInteger(Logger logger, String name, int value, int min, int max)
+  {
+    if (value < min || value > max)
+    {
+      logger.warning(String.format("The %s value, %d, is outside the allowed range [%d,%d].", name, value, min, max));
+      return false;
+    }
+    return true;
+  }
 
   // --------------------------------------------------------------------------
   /**

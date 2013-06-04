@@ -14,9 +14,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Pig;
-import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -28,35 +25,14 @@ public class CreatureFactory
 {
   // --------------------------------------------------------------------------
   /**
-   * Custom creature type signifying a wither skeleton.
-   */
-  public static final String WITHER_SKELETON = "WitherSkeleton";
-
-  /**
-   * Custom creature type signifying a saddled pig.
-   */
-  public static final String SADDLED_PIG     = "SaddledPig";
-
-  // --------------------------------------------------------------------------
-  /**
    * Return the type name of the specified LivingEntity.
    * 
    * @return the type name of the specified LivingEntity.
    */
   public static String getLivingEntityType(LivingEntity living)
   {
-    if (living instanceof Skeleton && ((Skeleton) living).getSkeletonType() == SkeletonType.WITHER)
-    {
-      return WITHER_SKELETON;
-    }
-    else if (living instanceof Pig && ((Pig) living).hasSaddle())
-    {
-      return SADDLED_PIG;
-    }
-    else
-    {
-      return living.getType().getName();
-    }
+    PredefinedCreature predefined = PredefinedCreature.fromLivingEntity(living);
+    return (predefined != null) ? predefined.name() : living.getType().getName();
   }
 
   // --------------------------------------------------------------------------
@@ -280,10 +256,10 @@ public class CreatureFactory
    * Return the CreatureType identified by the specified name, or null if not
    * found.
    * 
-   * Note that default Minecraft creatures, or the custom creatures
-   * WITHER_SKELETON (a reconfigured Skeleton) and SADDLED_PIG (a reconfigured
-   * Pig) will not have a corresponding CreatureType instance. The purpose of
-   * the CreatureType instance is to apply overrides to the defaults.
+   * Note that default Minecraft creatures, or the custom creatures defined by
+   * the PredefinedCreature enum will not have a corresponding CreatureType
+   * instance. The purpose of the CreatureType instance is to apply overrides to
+   * the defaults.
    * 
    * @param name the case-insensitive creature type name.
    * @return the CreatureType identified by the specified name, or null if not
@@ -326,19 +302,17 @@ public class CreatureFactory
   // --------------------------------------------------------------------------
   /**
    * Return true if the specified name signifies a vanilla Minecraft creature
-   * (as in known to EntityType) or the custom values WITHER_SKELETON and
-   * SADDLED_PIG signifying living entities that are part of the vanilla game.
+   * (as in known to EntityType) or one of the custom values defined by
+   * PredefinedCreature.
    * 
-   * @param name the creature type name.
+   * @param name the case-insensitive creature type.
    * @return true if the creature type is "vanilla", as opposed to defined in
    *         the Doppelganger configuration file.
    */
 
   public boolean isVanillaCreatureType(String name)
   {
-    return name.equalsIgnoreCase(WITHER_SKELETON) ||
-           name.equalsIgnoreCase(SADDLED_PIG) ||
-           EntityType.fromName(name) != null;
+    return PredefinedCreature.fromName(name) != null || EntityType.fromName(name) != null;
   }
 
   // --------------------------------------------------------------------------
@@ -353,8 +327,7 @@ public class CreatureFactory
   public boolean isValidCreatureType(String creatureType)
   {
     if (getCreatureType(creatureType) != null ||
-        creatureType.equalsIgnoreCase(WITHER_SKELETON) ||
-        creatureType.equalsIgnoreCase(SADDLED_PIG))
+        PredefinedCreature.fromName(creatureType) != null)
     {
       return true;
     }
@@ -379,8 +352,8 @@ public class CreatureFactory
    * be displayed.
    * 
    * @param creatureType the EntityType.getName() value specifying the creature
-   *          type; case-insensitive, or "WitherSkeleton". Null or the empty
-   *          string will result in no spawned creature.
+   *          type; case-insensitive, or PredefinedCreature.name(). Null or the
+   *          empty string will result in no spawned creature.
    * @param loc the spawn location (block above ground level).
    * @param name the custom name to assign and display; if null/empty, the
    *          default name from the creature type is used.
@@ -417,20 +390,13 @@ public class CreatureFactory
     else
     {
       // creatureType refers to either a known EntityType name, or one of the
-      // special values WITHER_SKELETON or SADDLED_PIG.
+      // special PredefinedCreature enum values.
       if (creatureType != null && creatureType.length() != 0)
       {
-        if (creatureType.equalsIgnoreCase(WITHER_SKELETON))
+        PredefinedCreature predefined = PredefinedCreature.fromName(creatureType);
+        if (predefined != null)
         {
-          Skeleton skeleton = loc.getWorld().spawn(loc, Skeleton.class);
-          skeleton.setSkeletonType(SkeletonType.WITHER);
-          livingEntity = skeleton;
-        }
-        else if (creatureType.equalsIgnoreCase(SADDLED_PIG))
-        {
-          Pig pig = loc.getWorld().spawn(loc, Pig.class);
-          pig.setSaddle(true);
-          livingEntity = pig;
+          livingEntity = predefined.spawn(loc);
         }
         else
         {
