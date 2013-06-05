@@ -197,6 +197,7 @@ creatures:
 
   RedBabyZombieVillager:
     spawn: BabyZombieVillager
+    despawns: false
     helmet:
       item: leather_helmet
       rgb: [255,0,0]
@@ -212,6 +213,7 @@ creatures:
     
   BlueBabyZombieVillager:
     spawn: BabyZombieVillager
+    despawns: false
     helmet:
       item: leather_helmet
       rgb: [0,0,255]
@@ -224,6 +226,12 @@ creatures:
     boots:
       item: leather_boots
       rgb: [0,0,255]
+      
+  BabyWolf:
+    despawns: false
+    spawn: Wolf
+    baby: true      
+    agelocked: true      
     
   ToughWitherSkeleton:
     spawn: WitherSkeleton
