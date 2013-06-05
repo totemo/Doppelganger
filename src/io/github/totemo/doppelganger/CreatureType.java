@@ -15,6 +15,7 @@ import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Ageable;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -75,6 +76,14 @@ public class CreatureType
       if (section.isSet("keephelmet"))
       {
         type._keepHelmet = section.getBoolean("keephelmet", false);
+      }
+      if (section.isSet("baby"))
+      {
+        type._baby = section.getBoolean("baby", false);
+      }
+      if (section.isSet("agelocked"))
+      {
+        type._ageLocked = section.getBoolean("agelocked", false);
       }
       if (section.isSet("despawns"))
       {
@@ -316,6 +325,18 @@ public class CreatureType
    */
   public void customise(LivingEntity entity)
   {
+    if (entity instanceof Ageable)
+    {
+      Ageable ageable = (Ageable) entity;
+      if (_baby != null && _baby)
+      {
+        ageable.setBaby();
+      }
+      if (_ageLocked != null)
+      {
+        ageable.setAgeLock(_ageLocked);
+      }
+    }
     if (_health != null)
     {
       entity.setMaxHealth(_health);
@@ -390,6 +411,14 @@ public class CreatureType
   public void describe(CommandSender sender)
   {
     sender.sendMessage(ChatColor.GOLD + "Creature " + getName() + ":");
+    if (_baby != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Baby: " + ChatColor.YELLOW + _baby);
+    }
+    if (_ageLocked != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Age locked: " + ChatColor.YELLOW + _ageLocked);
+    }
     if (getDefaultName() != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Default name: " + ChatColor.YELLOW + getDefaultName());
@@ -491,8 +520,15 @@ public class CreatureType
       {
         sender.sendMessage(String.format("        %sItem: %s%s, durability %d",
           ChatColor.GOLD, ChatColor.YELLOW, item.getType().toString(), item.getDurability()));
-
         ItemMeta meta = item.getItemMeta();
+        if (isLeatherArmour(item.getType()))
+        {
+          LeatherArmorMeta leatherMeta = (LeatherArmorMeta) meta;
+          Color rgb = leatherMeta.getColor();
+          sender.sendMessage(String.format("        %sRGB: %s%d %d %d",
+            ChatColor.GOLD, ChatColor.YELLOW, rgb.getRed(), rgb.getGreen(), rgb.getBlue()));
+        }
+
         if (meta.hasDisplayName())
         {
           sender.sendMessage(String.format("        %sName: %s%s",
@@ -641,10 +677,7 @@ public class CreatureType
           }
         }
       }
-      else if (material == Material.LEATHER_HELMET ||
-               material == Material.LEATHER_CHESTPLATE ||
-               material == Material.LEATHER_LEGGINGS ||
-               material == Material.LEATHER_BOOTS)
+      else if (isLeatherArmour(material))
       {
         List<Integer> rgbValues = section.getIntegerList("rgb");
         if (rgbValues.size() == 3)
@@ -712,6 +745,24 @@ public class CreatureType
     }
     return item;
   } // loadItem
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return true if the specified Material is one of the four leather armour
+   * items.
+   * 
+   * @param material the item material.
+   * @return true if the specified Material is one of the four leather armour
+   *         items.
+   */
+  protected static boolean isLeatherArmour(Material material)
+  {
+    return material == Material.LEATHER_HELMET ||
+           material == Material.LEATHER_CHESTPLATE ||
+           material == Material.LEATHER_LEGGINGS ||
+           material == Material.LEATHER_BOOTS;
+  }
+
   // --------------------------------------------------------------------------
   /**
    * Log a warning message if the value is not in the range [min,max].
@@ -885,6 +936,16 @@ public class CreatureType
    * value was explicitly specified in the configuration, for describe().
    */
   protected Boolean                   _keepHelmet;
+
+  /**
+   * If non-null and true, the creature spawns as a baby (if supported).
+   */
+  protected Boolean                   _baby;
+
+  /**
+   * If non-null and true, the creature will not grow up if spawned as a baby.
+   */
+  protected Boolean                   _ageLocked;
 
   /**
    * Maximum health in half-hearts. Null if not set in the configuration.

@@ -72,6 +72,27 @@ public enum PredefinedCreature
     }
   },
 
+  BabyZombieVillager
+  {
+    @Override
+    public boolean isInstance(LivingEntity living)
+    {
+      return living instanceof Zombie &&
+             ((Zombie) living).isVillager() &&
+             ((Zombie) living).isBaby();
+    }
+
+    @Override
+    public LivingEntity spawn(Location loc)
+    {
+      Zombie zombie = loc.getWorld().spawn(loc, Zombie.class);
+      zombie.setVillager(true);
+      // Note: Zombie interface does not extend Ageable.
+      zombie.setBaby(true);
+      return zombie;
+    }
+  },
+
   Blacksmith
   {
     @Override

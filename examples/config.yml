@@ -195,6 +195,36 @@ creatures:
       item: leather_boots
       rgb: [0,0,255]
 
+  RedBabyZombieVillager:
+    spawn: BabyZombieVillager
+    helmet:
+      item: leather_helmet
+      rgb: [255,0,0]
+    chestplate:
+      item: leather_chestplate
+      rgb: [255,0,0]
+    leggings:
+      item: leather_leggings
+      rgb: [255,0,0]
+    boots:
+      item: leather_boots
+      rgb: [255,0,0]
+    
+  BlueBabyZombieVillager:
+    spawn: BabyZombieVillager
+    helmet:
+      item: leather_helmet
+      rgb: [0,0,255]
+    chestplate:
+      item: leather_chestplate
+      rgb: [0,0,255]
+    leggings:
+      item: leather_leggings
+      rgb: [0,0,255]
+    boots:
+      item: leather_boots
+      rgb: [0,0,255]
+    
   ToughWitherSkeleton:
     spawn: WitherSkeleton
     sound: wither_spawn
