@@ -411,6 +411,11 @@ public class CreatureType
   public void describe(CommandSender sender)
   {
     sender.sendMessage(ChatColor.GOLD + "Creature " + getName() + ":");
+    sender.sendMessage(ChatColor.GOLD + "    Spawn: " + ChatColor.YELLOW + getCreatureType());
+    if (getDefaultName() != null)
+    {
+      sender.sendMessage(ChatColor.GOLD + "    Default name: " + ChatColor.YELLOW + getDefaultName());
+    }
     if (_baby != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Baby: " + ChatColor.YELLOW + _baby);
@@ -419,11 +424,6 @@ public class CreatureType
     {
       sender.sendMessage(ChatColor.GOLD + "    Age locked: " + ChatColor.YELLOW + _ageLocked);
     }
-    if (getDefaultName() != null)
-    {
-      sender.sendMessage(ChatColor.GOLD + "    Default name: " + ChatColor.YELLOW + getDefaultName());
-    }
-    sender.sendMessage(ChatColor.GOLD + "    Spawn: " + ChatColor.YELLOW + getCreatureType());
     if (_health != null)
     {
       sender.sendMessage(ChatColor.GOLD + "    Health: " + ChatColor.YELLOW + _health + " half hearts");

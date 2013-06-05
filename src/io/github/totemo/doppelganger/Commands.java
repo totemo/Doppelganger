@@ -123,7 +123,14 @@ public class Commands
         CreatureType type = _plugin.getCreatureFactory().getCreatureType(args[2]);
         if (type == null)
         {
-          sender.sendMessage(_failureColour + "There is no creature type by that name.");
+          if (CreatureFactory.isVanillaCreatureType(args[2]))
+          {
+            sender.sendMessage(_successColour + "That's a standard Minecraft creature or predefined by Doppelganger.");
+          }
+          else
+          {
+            sender.sendMessage(_failureColour + "There is no creature type by that name.");
+          }
         }
         else
         {

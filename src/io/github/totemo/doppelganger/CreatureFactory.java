@@ -310,7 +310,7 @@ public class CreatureFactory
    *         the Doppelganger configuration file.
    */
 
-  public boolean isVanillaCreatureType(String name)
+  public static boolean isVanillaCreatureType(String name)
   {
     return PredefinedCreature.fromName(name) != null || EntityType.fromName(name) != null;
   }
