@@ -3,6 +3,7 @@ package io.github.totemo.doppelganger;
 import java.util.HashMap;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Skeleton;
@@ -30,6 +31,7 @@ public enum PredefinedCreature
       return living instanceof Skeleton &&
              ((Skeleton) living).getSkeletonType() == SkeletonType.WITHER;
     }
+
     @Override
     public LivingEntity spawn(Location loc)
     {
@@ -46,6 +48,7 @@ public enum PredefinedCreature
     {
       return living instanceof Pig && ((Pig) living).hasSaddle();
     }
+
     @Override
     public LivingEntity spawn(Location loc)
     {
@@ -91,6 +94,23 @@ public enum PredefinedCreature
       zombie.setBaby(true);
       return zombie;
     }
+  },
+
+  ChargedCreeper
+  {
+    @Override
+    public boolean isInstance(LivingEntity living)
+    {
+      return living instanceof Creeper && ((Creeper) living).isPowered();
+    }
+
+    @Override
+    public LivingEntity spawn(Location loc)
+      {
+        Creeper creeper = loc.getWorld().spawn(loc, Creeper.class);
+        creeper.setPowered(true);
+        return creeper;
+      }
   },
 
   Blacksmith
