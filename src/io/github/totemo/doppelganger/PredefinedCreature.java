@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Pig;
+import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.entity.Villager;
@@ -91,6 +92,42 @@ public enum PredefinedCreature
       Zombie zombie = loc.getWorld().spawn(loc, Zombie.class);
       zombie.setVillager(true);
       // Note: Zombie interface does not extend Ageable.
+      zombie.setBaby(true);
+      return zombie;
+    }
+  },
+
+  BabyZombie
+  {
+    @Override
+    public boolean isInstance(LivingEntity living)
+    {
+      return living instanceof Zombie &&
+             !((Zombie) living).isVillager() &&
+             ((Zombie) living).isBaby();
+    }
+
+    @Override
+    public LivingEntity spawn(Location loc)
+    {
+      Zombie zombie = loc.getWorld().spawn(loc, Zombie.class);
+      zombie.setBaby(true);
+      return zombie;
+    }
+  },
+
+  BabyPigZombie
+  {
+    @Override
+    public boolean isInstance(LivingEntity living)
+    {
+      return living instanceof PigZombie && ((PigZombie) living).isBaby();
+    }
+
+    @Override
+    public LivingEntity spawn(Location loc)
+    {
+      PigZombie zombie = loc.getWorld().spawn(loc, PigZombie.class);
       zombie.setBaby(true);
       return zombie;
     }
