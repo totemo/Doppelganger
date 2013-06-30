@@ -32,6 +32,7 @@ public class Commands
     _plugin = plugin;
     _help = new Help("Help", plugin);
   }
+
   // --------------------------------------------------------------------------
   /**
    * This method is called if none of the subcommands matches exactly.
@@ -85,6 +86,24 @@ public class Commands
 
     // In all other cases, including failure:
     _help.showHelp(sender, "help", true);
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Handle the /doppel reload command.
+   */
+  @SubCommandHandler(parent = "doppel", name = "reload", permission = "doppelganger.reload")
+  public void onCommandDoppeReload(CommandSender sender, String[] args)
+  {
+    if (args.length == 1)
+    {
+      _plugin.getConfiguration().load();
+      sender.sendMessage(_successColour + "Doppelganger configuration reloaded.");
+      return;
+    }
+
+    sender.sendMessage(_failureColour + "Incorrect arguments.");
+    _help.showHelp(sender, "reload", true);
   }
 
   // --------------------------------------------------------------------------

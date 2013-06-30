@@ -14,6 +14,7 @@ permissions:
     description: Permission to use doppelganger commands.
     children:
       doppelganger.help: true
+      doppelganger.reload: true
       doppelganger.info: true
       doppelganger.coords: true
       doppelganger.kill: true
@@ -21,6 +22,9 @@ permissions:
       doppelganger.maintain: true
   doppelganger.help:
     description: Allows you to see Doppelganger command help and needed to use all other /doppel commands.
+    default: op
+  doppelganger.reload:
+    description: Allows you to reload the Doppelganger configuration.
     default: op
   doppelganger.info:
     description: Allows you to list doppelganger types and their attibutes.

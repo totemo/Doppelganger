@@ -36,6 +36,7 @@ public class Configuration
     _plugin.reloadConfig();
     _creatureFactory.load(_plugin.getConfig(), _plugin.getLogger());
     _arbitraryNameAllowed = _plugin.getConfig().getBoolean("allow_arbitrary_names", false);
+    _warnOnInvalidName = _plugin.getConfig().getBoolean("warn_on_invalid_name", false);
   }
 
   // --------------------------------------------------------------------------
@@ -48,6 +49,19 @@ public class Configuration
   public boolean isArbitraryNameAllowed()
   {
     return _arbitraryNameAllowed;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return true if the player will be told when the name of the block they are
+   * placing is not allowed.
+   * 
+   * @return true if the player will be told when the name of the block they are
+   *         placing is not allowed.
+   */
+  public boolean warnOnInvalidName()
+  {
+    return _warnOnInvalidName;
   }
 
   // --------------------------------------------------------------------------
@@ -67,4 +81,10 @@ public class Configuration
    * be a valid player name.
    */
   protected boolean         _arbitraryNameAllowed;
+
+  /**
+   * If true, the player will be told when the name of the block they are
+   * placing is not allowed.
+   */
+  protected boolean         _warnOnInvalidName;
 } // class Configuration

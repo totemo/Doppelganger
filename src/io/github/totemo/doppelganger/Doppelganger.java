@@ -26,6 +26,28 @@ import com.amoebaman.kitmaster.utilities.CommandController;
 public class Doppelganger extends JavaPlugin implements Listener
 {
   // --------------------------------------------------------------------------
+  /**
+   * Return the configuration.
+   * 
+   * @return the configuration.
+   */
+  public Configuration getConfiguration()
+  {
+    return _configuration;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Return the {@link CreatureFactory}.
+   * 
+   * @return the {@link CreatureFactory}.
+   */
+  public CreatureFactory getCreatureFactory()
+  {
+    return _creatureFactory;
+  }
+
+  // --------------------------------------------------------------------------
 
   @Override
   public void onEnable()
@@ -58,7 +80,8 @@ public class Doppelganger extends JavaPlugin implements Listener
   public void onBlockPlace(BlockPlaceEvent event)
   {
     ItemStack placedItem = event.getItemInHand();
-    if (!placedItem.hasItemMeta())
+    // Ignore named hoes tilling soil by checking if the item is a block.
+    if (!placedItem.hasItemMeta() || !placedItem.getType().isBlock())
     {
       return;
     }
@@ -68,7 +91,7 @@ public class Doppelganger extends JavaPlugin implements Listener
     {
       String doppelgangerName = meta.getDisplayName();
       Matcher nameMatcher = _namePattern.matcher(doppelgangerName);
-      if (!_configuration.isArbitraryNameAllowed() && !nameMatcher.matches())
+      if (_configuration.warnOnInvalidName() && !_configuration.isArbitraryNameAllowed() && !nameMatcher.matches())
       {
         event.getPlayer().sendMessage(
           ChatColor.DARK_RED + "\"" + doppelgangerName + "\" is not a valid player name.");
@@ -142,17 +165,6 @@ public class Doppelganger extends JavaPlugin implements Listener
       } // if name is allowed
     }
   } // onBlockPlace
-
-  // --------------------------------------------------------------------------
-  /**
-   * Return the {@link CreatureFactory}.
-   * 
-   * @return the {@link CreatureFactory}.
-   */
-  public CreatureFactory getCreatureFactory()
-  {
-    return _creatureFactory;
-  }
 
   // --------------------------------------------------------------------------
   /**
