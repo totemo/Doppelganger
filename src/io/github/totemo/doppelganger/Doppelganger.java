@@ -13,6 +13,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -165,6 +167,52 @@ public class Doppelganger extends JavaPlugin implements Listener
       } // if name is allowed
     }
   } // onBlockPlace
+
+  // --------------------------------------------------------------------------
+  /**
+   * Bukkit or vanilla Minecraft doesn't always drop equipment, when the drop
+   * chance is 1.0 (or more). Try to work around that by moving the equipment
+   * into the drops. Normally the equipment is not part of the drops. It is
+   * dropped by some other mechanism.
+   * 
+   * This handler will process any entity death, but naturally spawned monsters
+   * probably won't have a (near) 1.0 drop chance for the their equipment, and
+   * in any case the relocation of the equipment to drops should be benign.
+   */
+  @EventHandler(ignoreCancelled = true)
+  public void onEntityDeath(EntityDeathEvent event)
+  {
+    if (event.getEntity() instanceof Creature)
+    {
+
+      EntityEquipment equipment = event.getEntity().getEquipment();
+      if (equipment.getHelmetDropChance() > 0.999f)
+      {
+        event.getDrops().add(equipment.getHelmet());
+        equipment.setHelmet(null);
+      }
+      if (equipment.getChestplateDropChance() > 0.999f)
+      {
+        event.getDrops().add(equipment.getChestplate());
+        equipment.setChestplate(null);
+      }
+      if (equipment.getLeggingsDropChance() > 0.999f)
+      {
+        event.getDrops().add(equipment.getLeggings());
+        equipment.setLeggings(null);
+      }
+      if (equipment.getBootsDropChance() > 0.999f)
+      {
+        event.getDrops().add(equipment.getBoots());
+        equipment.setBoots(null);
+      }
+      if (equipment.getItemInHandDropChance() > 0.999f)
+      {
+        event.getDrops().add(equipment.getItemInHand());
+        equipment.setItemInHand(null);
+      }
+    }
+  } // onEntityDeath
 
   // --------------------------------------------------------------------------
   /**
