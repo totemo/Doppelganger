@@ -182,35 +182,57 @@ public class Doppelganger extends JavaPlugin implements Listener
   @EventHandler(ignoreCancelled = true)
   public void onEntityDeath(EntityDeathEvent event)
   {
+    boolean forcedDrops = false;
     if (event.getEntity() instanceof Creature)
     {
-
       EntityEquipment equipment = event.getEntity().getEquipment();
       if (equipment.getHelmetDropChance() > 0.999f)
       {
         event.getDrops().add(equipment.getHelmet());
         equipment.setHelmet(null);
+        forcedDrops = true;
       }
       if (equipment.getChestplateDropChance() > 0.999f)
       {
         event.getDrops().add(equipment.getChestplate());
         equipment.setChestplate(null);
+        forcedDrops = true;
       }
       if (equipment.getLeggingsDropChance() > 0.999f)
       {
         event.getDrops().add(equipment.getLeggings());
         equipment.setLeggings(null);
+        forcedDrops = true;
       }
       if (equipment.getBootsDropChance() > 0.999f)
       {
         event.getDrops().add(equipment.getBoots());
         equipment.setBoots(null);
+        forcedDrops = true;
       }
       if (equipment.getItemInHandDropChance() > 0.999f)
       {
         event.getDrops().add(equipment.getItemInHand());
         equipment.setItemInHand(null);
+        forcedDrops = true;
       }
+    }
+
+    // If a unity drop chance was specified, it's probably a Doppelganger.
+    // Log the drops for verification purposes.
+    if (forcedDrops)
+    {
+      Location loc = event.getEntity().getLocation();
+      StringBuilder drops = new StringBuilder();
+      drops.append("At (").append(loc.getBlockX()).append(',');
+      drops.append(loc.getBlockY()).append(',');
+      drops.append(loc.getBlockZ()).append(") drops:");
+      for (ItemStack item : event.getDrops())
+      {
+        drops.append(' ');
+        drops.append(item);
+      }
+      getLogger().info(drops.toString());
     }
   } // onEntityDeath
 
