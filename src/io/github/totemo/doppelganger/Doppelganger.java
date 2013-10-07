@@ -219,8 +219,10 @@ public class Doppelganger extends JavaPlugin implements Listener
     }
 
     // If a unity drop chance was specified, it's probably a Doppelganger.
+    // Also require a custom name, since 'special' mobs that pick up items
+    // will always drop them too.
     // Log the drops for verification purposes.
-    if (forcedDrops)
+    if (forcedDrops && event.getEntity().getCustomName() != null)
     {
       Location loc = event.getEntity().getLocation();
       StringBuilder drops = new StringBuilder();
