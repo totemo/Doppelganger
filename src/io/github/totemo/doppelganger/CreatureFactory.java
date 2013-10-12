@@ -428,9 +428,6 @@ public class CreatureFactory
         livingEntity.setCustomNameVisible(true);
       }
 
-      // Enable the spawned mob to pick up items always.
-      livingEntity.setCanPickupItems(true);
-
       // Make the doppelganger wear the player head or type-specific mask,
       // unless blocked by the keephelmet setting.
       if (type == null || !type.getKeepHelmet())
