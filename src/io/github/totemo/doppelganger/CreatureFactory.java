@@ -440,6 +440,10 @@ public class CreatureFactory
         }
       }
     }
+
+    // Players should not be able to get a doppelganger's head (or other gear)
+    // just by dropping items near it.
+    livingEntity.setCanPickupItems(false);
     return livingEntity;
   } // spawnCreature
 
