@@ -1,14 +1,16 @@
-name: Doppelganger
+name: ${project.name}
 main: io.github.totemo.doppelganger.Doppelganger
 version: ${project.version}
 description: ${project.description}
 author: totemo
-website: http://github.com/totemo/Doppelganger
+website: ${project.url}
+
 commands:
   doppel:
     description: Describes, finds, spawns and kills doppelgangers. See /doppel help.
     usage: /doppel [help|info|coords|kill|spawn|maintain] <subcommand arguments>
     permission: doppelganger.help
+
 permissions:
   doppelganger.*:
     description: Permission to use doppelganger commands.

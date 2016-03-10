@@ -35,9 +35,9 @@ public class CreatureType
   // --------------------------------------------------------------------------
   /**
    * Load this CreatureType from the specified section.
-   * 
+   *
    * The expected format is:
-   * 
+   *
    * <pre>
    * spawn: WitherSkeleton
    * despawns: false
@@ -50,7 +50,7 @@ public class CreatureType
    * potions:
    * - type: invisibility
    * </pre>
-   * 
+   *
    * @param name the name of the creature to load.
    * @param section the configuration section to load.
    * @param logger logs messages.
@@ -91,7 +91,7 @@ public class CreatureType
       }
       if (section.isSet("health"))
       {
-        type._health = Math.max(1, section.getInt("health", 20));
+        type._health = (double) Math.max(1, section.getInt("health", 20));
       }
       if (section.isSet("air"))
       {
@@ -140,6 +140,7 @@ public class CreatureType
       type._leggings = loadItem(section.getConfigurationSection("leggings"), logger);
       type._boots = loadItem(section.getConfigurationSection("boots"), logger);
       type._weapon = loadItem(section.getConfigurationSection("weapon"), logger);
+      type._shield = loadItem(section.getConfigurationSection("shield"), logger);
       if (section.isSet("helmet.dropchance"))
       {
         type._helmetDropChance = section.getDouble("helmet.dropchance");
@@ -160,6 +161,10 @@ public class CreatureType
       {
         type._weaponDropChance = section.getDouble("weapon.dropchance");
       }
+      if (section.isSet("shield.dropchance"))
+      {
+        type._shieldDropChance = section.getDouble("shield.dropchance");
+      }
 
       // Escorts.
       if (section.isConfigurationSection("escorts"))
@@ -173,7 +178,7 @@ public class CreatureType
   // --------------------------------------------------------------------------
   /**
    * Constructor.
-   * 
+   *
    * @param name a unique identifier for this type.
    * @param creatureType the type of creature to spawn.
    */
@@ -186,7 +191,7 @@ public class CreatureType
   // --------------------------------------------------------------------------
   /**
    * Return the unique identifier of this creature.
-   * 
+   *
    * @return the unique identifier of this creature.
    */
   public String getName()
@@ -198,7 +203,7 @@ public class CreatureType
   /**
    * Return the name of the CreatureType instance upon which this instance is
    * based.
-   * 
+   *
    * @return the name of the CreatureType instance upon which this instance is
    *         based.
    */
@@ -210,7 +215,7 @@ public class CreatureType
   // --------------------------------------------------------------------------
   /**
    * Return the type of creature that this creature is riding.
-   * 
+   *
    * @return the type of creature that this creature is riding. If not set in
    *         the configuration, it will be null. If null or set to the empty
    *         string, nothing will be ridden.
@@ -224,7 +229,7 @@ public class CreatureType
   /**
    * Return the name of the player whose head this creature should always wear,
    * irrespective of the player name it was summoned with.
-   * 
+   *
    * @return the name of the player whose head this creature should always wear,
    *         irrespective of the player name it was summoned with, or null if
    *         not set.
@@ -239,7 +244,7 @@ public class CreatureType
    * Return the default name tag to give this creature if no name is specified
    * when it spawns - either because it was spawned anonymous by command, or
    * because it was spawned as an escort mob.
-   * 
+   *
    * @return the default name of this creature if not specified.
    */
   public String getDefaultName()
@@ -252,10 +257,10 @@ public class CreatureType
    * Return true if the creature should keep wearing whatever helmet it was
    * configured with rather than wearing the player head corresponding to its
    * name or mask.
-   * 
+   *
    * If this is false (the default), a name or mask will force the creature to
    * wear that player's head.
-   * 
+   *
    * @return the default name of this creature if not specified.
    */
   public boolean getKeepHelmet()
@@ -267,7 +272,7 @@ public class CreatureType
   // --------------------------------------------------------------------------
   /**
    * Do sound and damage-free lighting strike effects.
-   * 
+   *
    * @param plugin the originating Plugin.
    * @param loc the Location where the creature will spawn.
    */
@@ -293,7 +298,7 @@ public class CreatureType
   // --------------------------------------------------------------------------
   /**
    * Spawn escorts of this creature, if they have been defined.
-   * 
+   *
    * @param plugin the Doppelganger plugin.
    * @param centre the Location where the creature will spawn and the centre of
    *          the circle within which escorts can spawn.
@@ -320,7 +325,7 @@ public class CreatureType
   /**
    * Apply the custom attributes embodied by this type to the specified
    * creature.
-   * 
+   *
    * @param entity the creature to customise.
    */
   public void customise(LivingEntity entity)
@@ -394,18 +399,26 @@ public class CreatureType
     }
     if (_weapon != null)
     {
-      entity.getEquipment().setItemInHand(_weapon);
+      entity.getEquipment().setItemInMainHand(_weapon);
     }
     if (_weaponDropChance != null)
     {
-      entity.getEquipment().setItemInHandDropChance(_weaponDropChance.floatValue());
+      entity.getEquipment().setItemInMainHandDropChance(_weaponDropChance.floatValue());
+    }
+    if (_shield != null)
+    {
+      entity.getEquipment().setItemInOffHand(_shield);
+    }
+    if (_shieldDropChance != null)
+    {
+      entity.getEquipment().setItemInOffHandDropChance(_shieldDropChance.floatValue());
     }
   } // customise
 
   // --------------------------------------------------------------------------
   /**
    * Print a description of this CreatureType to the command sender.
-   * 
+   *
    * @param sender the entity requesting the description.
    */
   public void describe(CommandSender sender)
@@ -480,6 +493,7 @@ public class CreatureType
     describeItem(sender, "    Leggings: ", _leggings, _leggingsDropChance);
     describeItem(sender, "    Boots: ", _boots, _bootsDropChance);
     describeItem(sender, "    Weapon: ", _weapon, _weaponDropChance);
+    describeItem(sender, "    Shield: ", _shield, _shieldDropChance);
     if (_maxEscorts > 0)
     {
       sender.sendMessage(String.format(
@@ -502,9 +516,9 @@ public class CreatureType
   /**
    * Send a human-readable description of the specified item to the command
    * sender.
-   * 
+   *
    * This method is called by describe().
-   * 
+   *
    * @param sender the actor issuing the command and receiving output.
    * @param heading the heading of the description.
    * @param item the (assumed non-null) item to describe.
@@ -577,7 +591,7 @@ public class CreatureType
   /**
    * Load the potion effects defined in the "potions" section of this
    * CreatureType's configuration
-   * 
+   *
    * @param potions the "potions" ConfigurationSection.
    * @param logger logs messages.
    */
@@ -627,7 +641,7 @@ public class CreatureType
   /**
    * Load an item (armour or weapon, with optional enchants) and return it as an
    * ItemStack.
-   * 
+   *
    * @param section the configuration section to load from.
    * @param logger logs messages.
    */
@@ -750,7 +764,7 @@ public class CreatureType
   /**
    * Return true if the specified Material is one of the four leather armour
    * items.
-   * 
+   *
    * @param material the item material.
    * @return true if the specified Material is one of the four leather armour
    *         items.
@@ -766,7 +780,7 @@ public class CreatureType
   // --------------------------------------------------------------------------
   /**
    * Log a warning message if the value is not in the range [min,max].
-   * 
+   *
    * @param logger the logger.
    * @param name the name used to describe the value in the message.
    * @param value the value.
@@ -787,7 +801,7 @@ public class CreatureType
   // --------------------------------------------------------------------------
   /**
    * Load the description of the escort mobs from the configuration.
-   * 
+   *
    * @param escorts the "escorts" section of the current creature, if such a
    *          section exists.
    * @param logger used to log messages.
@@ -831,7 +845,7 @@ public class CreatureType
   /**
    * Schedule a random, damage-free lighting strike effect around the specified
    * Location.
-   * 
+   *
    * @param plugin the originating Plugin.
    * @param centre the centre of the random coordinate range.
    * @param minRange the minimum distance of the strike from centre on the X-Z
@@ -859,7 +873,7 @@ public class CreatureType
   /**
    * Select a random location at the same altitude as the centre, between
    * minRange and maxRange blocks distant in the X-Z plane.
-   * 
+   *
    * @param centre the average location returned.
    * @param minRange minimum distance from centre in blocks.
    * @param maxRange maximum distance from centre in blocks.
@@ -880,9 +894,9 @@ public class CreatureType
   /**
    * Translate colour and formatting codes preceded by ampersand and replace
    * C-style backslash escape sequences for \n with that characters.
-   * 
+   *
    * The game currently doesn't understand \t (tabs), so they are not supported.
-   * 
+   *
    * @param text the text to translate; can be null.
    * @return the translated text. If the text parameter was null, return null.
    */
@@ -928,10 +942,10 @@ public class CreatureType
    * Instead it will keep whatever helmet it was configured with. If false (the
    * default if omitted), the creature will wear a player's head if given a
    * name.
-   * 
+   *
    * The "keephelmet:" configuration setting takes precedence over the "mask:"
    * setting when both are specified.
-   * 
+   *
    * Store a Boolean rather than boolean, so we can keep track of whether a
    * value was explicitly specified in the configuration, for describe().
    */
@@ -950,7 +964,7 @@ public class CreatureType
   /**
    * Maximum health in half-hearts. Null if not set in the configuration.
    */
-  protected Integer                   _health;
+  protected Double                    _health;
 
   /**
    * The lung capacity of the creature in ticks. Null if not set in the
@@ -1026,9 +1040,14 @@ public class CreatureType
   protected ItemStack                 _boots;
 
   /**
-   * Item in hand. Null if not set in the configuration.
+   * Item in the main hand. Null if not set in the configuration.
    */
   protected ItemStack                 _weapon;
+
+  /**
+   * Item in the off hand. Null if not set in the configuration.
+   */
+  protected ItemStack                 _shield;
 
   /**
    * Chance of dropping helmet, [0.0, 1.0]. Null if not set in the
@@ -1054,10 +1073,16 @@ public class CreatureType
   protected Double                    _bootsDropChance;
 
   /**
-   * Chance of dropping item in hand, [0.0, 1.0]. Null if not set in the
-   * configuration.
+   * Chance of dropping the item in the main hand, [0.0, 1.0]. Null if not set
+   * in the configuration.
    */
   protected Double                    _weaponDropChance;
+
+  /**
+   * Chance of dropping the item in the off hand, [0.0, 1.0]. Null if not set
+   * in the configuration.
+   */
+  protected Double                    _shieldDropChance;
 
   /**
    * Minimum number of escort creatures.

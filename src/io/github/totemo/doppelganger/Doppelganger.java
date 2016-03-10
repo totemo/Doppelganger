@@ -31,7 +31,7 @@ public class Doppelganger extends JavaPlugin implements Listener
   // --------------------------------------------------------------------------
   /**
    * Return the configuration.
-   * 
+   *
    * @return the configuration.
    */
   public Configuration getConfiguration()
@@ -42,7 +42,7 @@ public class Doppelganger extends JavaPlugin implements Listener
   // --------------------------------------------------------------------------
   /**
    * Return the {@link CreatureFactory}.
-   * 
+   *
    * @return the {@link CreatureFactory}.
    */
   public CreatureFactory getCreatureFactory()
@@ -73,10 +73,10 @@ public class Doppelganger extends JavaPlugin implements Listener
   // --------------------------------------------------------------------------
   /**
    * Event handler for placing blocks.message
-   * 
+   *
    * Checks that a named item is stacked on a configured shape made of blocks of
    * the requisite material.
-   * 
+   *
    * @param event the event.
    */
   @EventHandler(ignoreCancelled = true)
@@ -112,7 +112,7 @@ public class Doppelganger extends JavaPlugin implements Listener
           CreatureShape shape = null;
           for (CreatureShape tryShape : shapes)
           {
-            if (tryShape.isComplete(loc, placedItem.getTypeId()))
+            if (tryShape.isComplete(loc, placedItem.getType()))
             {
               if (tryShape.hasBorder(loc))
               {
@@ -139,7 +139,7 @@ public class Doppelganger extends JavaPlugin implements Listener
         {
           // Generic case where the doppelganger name doesn't matter.
           // Check whether there is a complete creature under the trigger block.
-          CreatureShape shape = _creatureFactory.getCreatureShape(loc, event.getPlayer().getItemInHand());
+          CreatureShape shape = _creatureFactory.getCreatureShape(loc, event.getPlayer().getEquipment().getItemInMainHand());
           if (shape != null)
           {
             if (shape.hasBorder(loc))
@@ -174,11 +174,11 @@ public class Doppelganger extends JavaPlugin implements Listener
    * Vanilla Minecraft doesn't always drop equipment when the drop chance is 1.0
    * (or more). Try to work around that by moving the equipment into the drops
    * if it is not already there.
-   * 
+   *
    * In Bukkit versions prior to 1.7.9, the equipment was not part of the drops
    * list in the EntityDeathEvent. Bukkit fixed that issue with the API, but had
    * to retain vanilla's handling of drop probabilities, which is still faulty.
-   * 
+   *
    * This handler will process any entity death, but naturally spawned monsters
    * probably won't have a (near) 1.0 drop chance for the their equipment, and
    * in any case the relocation of the equipment to drops should be benign.
@@ -235,11 +235,11 @@ public class Doppelganger extends JavaPlugin implements Listener
       if (equipment.getItemInHandDropChance() > NEAR_UNITY)
       {
         forcedDrops = true;
-        ItemStack itemInHand = equipment.getItemInHand();
+        ItemStack itemInHand = equipment.getItemInMainHand();
         if (itemInHand != null && !drops.contains(itemInHand))
         {
           drops.add(itemInHand);
-          equipment.setItemInHand(null);
+          equipment.setItemInMainHand(null);
         }
       }
     }
@@ -267,7 +267,7 @@ public class Doppelganger extends JavaPlugin implements Listener
   // --------------------------------------------------------------------------
   /**
    * Spawn a doppelganger of the specified type and name.
-   * 
+   *
    * @param creatureType the type of creature to spawn.
    * @param name the name to show on the name tag. This is also the name of the
    *          player whose head will be worn, unless the creature type includes
@@ -288,7 +288,7 @@ public class Doppelganger extends JavaPlugin implements Listener
   /**
    * Cancel the original block placement, vaporise the golem blocks and spawn a
    * named LivingEntity of the specified type.
-   * 
+   *
    * @param doppelgangerName the name of spawned creature.
    * @param creatureType the name of the type of creature to spawn.
    * @param shape the shape of the golem blocks.
@@ -312,11 +312,11 @@ public class Doppelganger extends JavaPlugin implements Listener
     if (placedItem.getAmount() > 1)
     {
       placedItem.setAmount(placedItem.getAmount() - 1);
-      event.getPlayer().setItemInHand(placedItem);
+      event.getPlayer().getEquipment().setItemInMainHand(placedItem);
     }
     else
     {
-      event.getPlayer().setItemInHand(null);
+      event.getPlayer().getEquipment().setItemInMainHand(null);
     }
 
     // Vaporise the shape blocks.

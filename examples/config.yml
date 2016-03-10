@@ -139,18 +139,18 @@ shapes:
 creatures:
   SpecialBat:
     spawn: Bat
-    sound: ambience_cave
+    sound: ambient_cave
 
   SpecialCow:
     spawn: Cow
-    sound: ambience_cave
+    sound: ambient_cave
     lightning:
       min: 1
     despawns: false
 
   SpecialVillager:
     spawn: Villager
-    sound: ambience_cave
+    sound: ambient_cave
     lightning:
       min: 1
     despawns: false
@@ -176,7 +176,7 @@ creatures:
     boots:
       item: leather_boots
       rgb: [255,0,0]
-  
+
   BlueSkeleton:
     spawn: Skeleton
     lightning:
@@ -210,7 +210,7 @@ creatures:
     boots:
       item: leather_boots
       rgb: [255,0,0]
-    
+
   BlueBabyZombieVillager:
     spawn: BabyZombieVillager
     despawns: false
@@ -226,7 +226,7 @@ creatures:
     boots:
       item: leather_boots
       rgb: [0,0,255]
-      
+
   RedBabyZombie:
     spawn: BabyZombie
     despawns: false
@@ -242,7 +242,7 @@ creatures:
     boots:
       item: leather_boots
       rgb: [255,0,0]
-    
+
   BlueBabyZombie:
     spawn: BabyZombie
     despawns: false
@@ -294,12 +294,12 @@ creatures:
   BabyWolf:
     despawns: false
     spawn: Wolf
-    baby: true      
-    agelocked: true      
-    
+    baby: true
+    agelocked: true
+
   ToughWitherSkeleton:
     spawn: WitherSkeleton
-    sound: wither_spawn
+    sound: entity_wither_spawn
     lightning:
       min: 1
     despawns: false
@@ -335,7 +335,7 @@ creatures:
 
   ToughSkeleton:
     spawn: Skeleton
-    sound: wither_spawn
+    sound: entity_wither_spawn
     lightning:
       min: 1
     despawns: false
@@ -357,7 +357,7 @@ creatures:
 
   ToughPigZombie:
     spawn: PigZombie
-    sound: wither_spawn
+    sound: entity_wither_spawn
     lightning:
       min: 1
     despawns: false
@@ -380,7 +380,7 @@ creatures:
     defaultname: Minion
     keephelmet: true
     spawn: Skeleton
-    sound: ambience_cave
+    sound: ambient_cave
     helmet:
       item: melon_block
     weapon:
@@ -391,7 +391,7 @@ creatures:
     defaultname: Henchman
     keephelmet: true
     spawn: Skeleton
-    sound: ambience_cave
+    sound: ambient_cave
     helmet:
       item: melon_block
     chestplate:
@@ -409,14 +409,14 @@ creatures:
   FlyingPig:
     spawn: Pig
     mount: InvisibleBat
-    sound: pig_death
+    sound: entity_pig_death
 
   FlyingSquid:
     spawn: Squid
     mount: InvisibleBat
-    sound: swim
+    sound: entity_generic_swim
     air: 72000
-        
+
   FlyingSaddledPig:
     spawn: SaddledPig
     mount: InvisibleBat
@@ -438,7 +438,7 @@ creatures:
     potions:
     - type: invisibility
       ambient: false
-    
+
   FlyingSkull:
     spawn: Skeleton
     despawns: false
@@ -447,7 +447,7 @@ creatures:
     potions:
     - type: invisibility
     - type: fire_resistance
-    helmet: 
+    helmet:
       item: skull_item
       dropchance: 0.0
     weapon:
@@ -467,7 +467,7 @@ creatures:
     lightning:
       min: 4
       max: 7
-    sound: wither_spawn
+    sound: entity_wither_spawn
     helmet:
       item: skull_item
       lore:
@@ -480,9 +480,15 @@ creatures:
       enchantments:
       - type: protection_environmental
         level: 4
-    leggings: 
+    leggings:
       item: diamond_leggings
       damage: 3
+      dropchance: 0.0
+      enchantments:
+      - type: protection_environmental
+        level: 4
+    boots:
+      item: diamond_boots
       dropchance: 0.0
       enchantments:
       - type: protection_environmental
@@ -500,7 +506,7 @@ creatures:
         level: 5
       - type: fire_aspect
         level: 2
-    boots:
+    shield:
 #      item: tripwire_hook
 #      name: The Key of Notch
 #      lore:
@@ -547,6 +553,12 @@ creatures:
       - type: protection_environmental
         level: 4
     boots:
+      item: diamond_boots
+      dropchance: 0.0
+      enchantments:
+      - type: protection_environmental
+        level: 4
+    shield:
       item: written_book
       lore:
       - "&4&oA mysterious tome of great power."
@@ -653,14 +665,14 @@ creatures:
       - weight: 0.5
         spawn: Bat
 
-        
+
 players:
   Notch:
     spawn: Notch
     shapes:
     - diamond_t_ns
     - diamond_t_ew
-        
+
   jeb_:
     shapes:
     - diamond_t_ns

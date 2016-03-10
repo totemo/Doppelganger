@@ -3,52 +3,29 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.totemo</groupId>
 	<artifactId>Doppelganger</artifactId>
-	<version>0.9.2</version>
+	<version>0.10.0</version>
 	<packaging>jar</packaging>
 	<name>Doppelganger</name>
+	<description>Provides custom, summonable mobs that are reminiscent of the built-in golem types.</description>
+	<url>https://github.com/totemo/Doppelganger</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
-    <distributionManagement>
-        <repository>
-            <id></id>
-            <name></name>
-            <url></url>
-        </repository>
-        <snapshotRepository>
-            <id></id>
-            <name></name>
-            <url></url>
-        </snapshotRepository>
-    </distributionManagement>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>bukkit-plugins</id>
-			<url>http://repo.bukkit.org/content/groups/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.5.2-R0.1</version>
+			<version>1.9-R0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<repositories>
 		<repository>
-			<id>bukkit-repo</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<url>http://repo.bukkit.org/content/groups/public/</url>
+			<id>spigot-repo</id>
+			<url>https://hub.spigotmc.org/nexus/content/groups/public</url>
 		</repository>
 	</repositories>
 	<build>
+		<defaultGoal>clean package</defaultGoal>
 		<sourceDirectory>${basedir}/src</sourceDirectory>
 		<resources>
 			<resource>
@@ -62,7 +39,6 @@
 				</includes>
 			</resource>
 		</resources>
-		<defaultGoal>clean package</defaultGoal>
 		<pluginManagement>
 			<plugins>
 				<plugin>

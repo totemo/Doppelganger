@@ -17,7 +17,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-// --------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 /**
  * Manages known creature types and creates them on demand.
  */
@@ -26,7 +26,7 @@ public class CreatureFactory
   // --------------------------------------------------------------------------
   /**
    * Return the type name of the specified LivingEntity.
-   * 
+   *
    * @return the type name of the specified LivingEntity.
    */
   public static String getLivingEntityType(LivingEntity living)
@@ -38,7 +38,7 @@ public class CreatureFactory
   // --------------------------------------------------------------------------
   /**
    * Load the creature shapes and types from the configuration file.
-   * 
+   *
    * @param root the root of the configuration hierarchy.
    * @param logger the Logger.
    */
@@ -171,7 +171,7 @@ public class CreatureFactory
   /**
    * Print a human-readable list of the configured shapes, creature types and
    * player-name-specific creatures to the command sender.
-   * 
+   *
    * @param sender the agent requesting the listing.
    */
   public void listConfiguration(CommandSender sender)
@@ -214,7 +214,7 @@ public class CreatureFactory
   /**
    * Return the {@link CreatureShape} with the specified name in the
    * configuration, or null if not found.
-   * 
+   *
    * @param name the case insensitive shape name.
    * @return the {@link CreatureShape} with the specified name in the
    *         configuration, or null if not found.
@@ -228,10 +228,10 @@ public class CreatureFactory
   /**
    * Return the {@link CreatureShape} representing the shape used to summon a
    * creature by placing the specified item.
-   * 
+   *
    * The placed item must be named (by an anvil) and the shape and type of the
    * blocks around it must match one of those specified in the configuration.
-   * 
+   *
    * @param loc the location where the triggering item is placed.
    * @param placedItem the item to be tested as a trigger of creature summoning.
    * @return the {@link CreatureShape} of the creature that would be created, or
@@ -243,7 +243,7 @@ public class CreatureFactory
     // named blocks?
     for (CreatureShape shape : _shapes.values())
     {
-      if (shape.isComplete(loc, placedItem.getTypeId()))
+      if (shape.isComplete(loc, placedItem.getType()))
       {
         return shape;
       }
@@ -255,12 +255,12 @@ public class CreatureFactory
   /**
    * Return the CreatureType identified by the specified name, or null if not
    * found.
-   * 
+   *
    * Note that default Minecraft creatures, or the custom creatures defined by
    * the PredefinedCreature enum will not have a corresponding CreatureType
    * instance. The purpose of the CreatureType instance is to apply overrides to
    * the defaults.
-   * 
+   *
    * @param name the case-insensitive creature type name.
    * @return the CreatureType identified by the specified name, or null if not
    *         found.
@@ -274,7 +274,7 @@ public class CreatureFactory
   /**
    * Return the specific creature type that will be spawned when the named
    * player is summoned.
-   * 
+   *
    * @param playerName the name of the player whose custom creature type name
    *          will be returned.
    * @return the specific creature type that will be spawned when the named
@@ -288,7 +288,7 @@ public class CreatureFactory
   // --------------------------------------------------------------------------
   /**
    * Return the specific shapes that can summon the specified player.
-   * 
+   *
    * @param playerName the name of the player for whom summoning shapes will be
    *          returned.
    * @return the specific shapes that can summon the specified player; or null
@@ -304,7 +304,7 @@ public class CreatureFactory
    * Return true if the specified name signifies a vanilla Minecraft creature
    * (as in known to EntityType) or one of the custom values defined by
    * PredefinedCreature.
-   * 
+   *
    * @param name the case-insensitive creature type.
    * @return true if the creature type is "vanilla", as opposed to defined in
    *         the Doppelganger configuration file.
@@ -319,7 +319,7 @@ public class CreatureFactory
   /**
    * Return true if the specified creature is a valid EntityType value or a
    * supported custom creature name.
-   * 
+   *
    * @param creatureType the case-insensitive custom or vanilla creature type.
    * @return true if the specified living entity is a valid EntityType value or
    *         a supported custom creature name.
@@ -341,16 +341,16 @@ public class CreatureFactory
   // --------------------------------------------------------------------------
   /**
    * Spawn a living entity of the specified type.
-   * 
+   *
    * This method originally returned a Creature, but Bats are Ambient mobs. The
    * next common base class is LivingEntity.
-   * 
+   *
    * If the creature type has a mask, then the creature will wear that player's
    * head, irrespective of the creature's name. If a name is not specified, then
    * the default name from the configuration will be used. If the original name
    * specified is non-empty, or a valid default is provided, the name plate will
    * be displayed.
-   * 
+   *
    * @param creatureType the EntityType.getName() value specifying the creature
    *          type; case-insensitive, or PredefinedCreature.name(). Null or the
    *          empty string will result in no spawned creature.
@@ -450,10 +450,10 @@ public class CreatureFactory
   // --------------------------------------------------------------------------
   /**
    * Ensure that the doppelganger is wearing the specified player's head.
-   * 
+   *
    * If the creature was configured to be wearing a skull as a helmet, customise
    * that skull item so that settings from the configuration are retained.
-   * 
+   *
    * @param doppelganger the creature.
    * @param name the name of the player whose head will be worn.
    */
@@ -476,7 +476,7 @@ public class CreatureFactory
   // --------------------------------------------------------------------------
   /**
    * Map from lower case shape name to {@link CreatureShape} instance.
-   * 
+   *
    * Use a LinkedHashMap to preserve the ordering defined in the configuration
    * file. That way earlier entries have precedence over later ones.
    */

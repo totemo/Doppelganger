@@ -25,9 +25,9 @@ public class CreatureShape
   // --------------------------------------------------------------------------
   /**
    * Load this CreatureShape from the specified section.
-   * 
+   *
    * The expected format is:
-   * 
+   *
    * <pre>
    *    head: pumpkin
    *    body:
@@ -39,12 +39,12 @@ public class CreatureShape
    *    - weight: 1.0
    *      spawn: ToughWitherSkeleton
    * </pre>
-   * 
+   *
    * Note that the "body" can be omitted, in which case placing a named head
    * block will summon a creature. Also, the "summon" can be omitted, in which
    * case nothing will be summoned by default. This may still be useful if
    * specific player names override what is summoned.
-   * 
+   *
    * @param section the configuration section to load.
    * @param logger logs messages.
    * @return a new CreatureShape instance, or null on error.
@@ -142,7 +142,7 @@ public class CreatureShape
   // --------------------------------------------------------------------------
   /**
    * Constructor.
-   * 
+   *
    * @param name the name of this shape in the configuration.
    * @param triggerMaterial the Material of the final placed block that triggers
    *          creature spawning.
@@ -152,14 +152,14 @@ public class CreatureShape
   public CreatureShape(String name, Material triggerMaterial, boolean enabled)
   {
     _name = name;
-    _triggerMaterialId = triggerMaterial.getId();
+    _triggerMaterial = triggerMaterial;
     _enabled = enabled;
   }
 
   // --------------------------------------------------------------------------
   /**
    * Return the name of this shape in the configuration.
-   * 
+   *
    * @return the name of this shape in the configuration.
    */
   public String getName()
@@ -169,19 +169,19 @@ public class CreatureShape
 
   // --------------------------------------------------------------------------
   /**
-   * Return the Material ID of the trigger.
-   * 
-   * @return the Material ID of the trigger.
+   * Return the Material of the trigger.
+   *
+   * @return the Material of the trigger.
    */
-  public int getTriggerMaterialId()
+  public Material getTriggerMaterial()
   {
-    return _triggerMaterialId;
+    return _triggerMaterial;
   }
 
   // --------------------------------------------------------------------------
   /**
    * Return true if building this shape will summon a doppelganger.
-   * 
+   *
    * @return true if building this shape will summon a doppelganger.
    */
   public boolean isEnabled()
@@ -193,10 +193,10 @@ public class CreatureShape
   /**
    * Signify that the {@link CreatureType} signified by its name can be summoned
    * by this shape, with the specified weighted probability.
-   * 
+   *
    * The chance of a specific {@link CreatureType} being spawned is its weight
    * divided by the sum of the weights of all registered types for this shape.
-   * 
+   *
    * @param type the name of the {@link CreatureType}.
    * @param weight the probability weight.
    */
@@ -208,10 +208,10 @@ public class CreatureShape
   // --------------------------------------------------------------------------
   /**
    * Return the name of the spawned CreatureType.
-   * 
+   *
    * If more than one {@link CreatureType} is associated with this shape, a type
    * will be selected at random according to weighted probability.
-   * 
+   *
    * @return the type name of the spawned CreatureType.
    */
   public String chooseCreatureType()
@@ -222,13 +222,13 @@ public class CreatureShape
   // --------------------------------------------------------------------------
   /**
    * Define the Material its position relative to the trigger block.
-   * 
+   *
    * @param material the Material of the pre-placed creature block.
    * @param offset the position of that relative to the final trigger block.
    */
   public void addCreatureBlock(Material material, Vector offset)
   {
-    _materialIds.add(material.getId());
+    _materials.add(material);
     _offsets.add(offset);
     if (offset.getBlockY() < _groundOffset)
     {
@@ -240,31 +240,31 @@ public class CreatureShape
   /**
    * Return true if this shape is enabled and placing an item of the specified
    * type at the specified Location would result in this creature shape.
-   * 
+   *
    * @param loc the location where the trigger block would be placed.
-   * @param placedItemId the ID of the placed block.
+   * @param placedMaterial the Material of the placed block.
    * @return true if placing the specified block at the specified location would
    *         result in a complete creature shape.
    */
-  public boolean isComplete(Location loc, int placedItemId)
+  public boolean isComplete(Location loc, Material placedMaterial)
   {
-    return isEnabled() && _triggerMaterialId == placedItemId && isCreatureShape(loc);
+    return isEnabled() && _triggerMaterial == placedMaterial && isCreatureShape(loc);
   }
 
   // --------------------------------------------------------------------------
   /**
    * Return true if placing the trigger block at the specified Location would
    * result in a complete creature shape.
-   * 
+   *
    * @param loc the location where the trigger block would be placed.
    * @return true if placing the trigger block at the specified location would
    *         result in a complete creature shape.
    */
   public boolean isCreatureShape(Location loc)
   {
-    for (int i = 0; i < _materialIds.size(); ++i)
+    for (int i = 0; i < _materials.size(); ++i)
     {
-      if (getCreatureBlock(loc, i).getTypeId() != _materialIds.get(i))
+      if (getCreatureBlock(loc, i).getType() != _materials.get(i))
       {
         return false;
       }
@@ -276,21 +276,21 @@ public class CreatureShape
   /**
    * Set all of the blocks of the creature shape at the specified location to
    * air.
-   * 
+   *
    * @param loc the location where the trigger block would be placed.
    */
   public void vaporise(Location loc)
   {
     for (int i = 0; i < _offsets.size(); ++i)
     {
-      getCreatureBlock(loc, i).setTypeId(0);
+      getCreatureBlock(loc, i).setType(Material.AIR);
     }
   }
 
   // --------------------------------------------------------------------------
   /**
    * Return the offset in Y coordinate of the lowest blocks in the shape.
-   * 
+   *
    * @return the offset in Y coordinate of the lowest blocks in the shape.
    */
   public int getGroundOffset()
@@ -301,23 +301,22 @@ public class CreatureShape
   // --------------------------------------------------------------------------
   /**
    * Print a description of this shape to the command sender.
-   * 
+   *
    * @param sender the entity requesting the description.
    */
   public void describe(CommandSender sender)
   {
     sender.sendMessage(ChatColor.GOLD + "Shape " + getName() + ":");
     sender.sendMessage(ChatColor.GOLD + "    Enabled: " + ChatColor.YELLOW + isEnabled());
-    sender.sendMessage(ChatColor.GOLD + "    Head material: " + ChatColor.YELLOW
-                       + Material.getMaterial(getTriggerMaterialId()).toString());
+    sender.sendMessage(ChatColor.GOLD + "    Head material: " + ChatColor.YELLOW + getTriggerMaterial());
     sender.sendMessage(ChatColor.GOLD + "    Y offset to ground: " + ChatColor.YELLOW + getGroundOffset());
-    if (_materialIds.size() != 0)
+    if (_materials.size() != 0)
     {
       sender.sendMessage(ChatColor.GOLD + "    Body: ");
-      for (int i = 0; i < _materialIds.size(); ++i)
+      for (int i = 0; i < _materials.size(); ++i)
       {
         sender.sendMessage(String.format("%s        (%d) %s at (%d, %d, %d)",
-          ChatColor.YELLOW, i + 1, Material.getMaterial(_materialIds.get(i)).toString(),
+          ChatColor.YELLOW, i + 1, _materials.get(i).toString(),
           _offsets.get(i).getBlockX(), _offsets.get(i).getBlockY(), _offsets.get(i).getBlockZ()));
       }
     }
@@ -358,11 +357,11 @@ public class CreatureShape
    * Check that there is 1 block wide border of air around the bounding box of
    * the creature shape in all horizontal directions (but not above or below the
    * bounding box).
-   * 
+   *
    * The purpose of this is to prevent the use of Doppelganger spawning as a way
    * to grief a pre-existing structure that was not built for the purpose of
    * spawning a Doppelganger.
-   * 
+   *
    * @param loc the Location of the final head block.
    * @return true if the required border is present around the shape.
    */
@@ -374,7 +373,7 @@ public class CreatureShape
       int x = loc.getBlockX() + offset.getBlockX();
       int y = loc.getBlockY() + offset.getBlockY();
       int z = loc.getBlockZ() + offset.getBlockZ();
-      if (loc.getWorld().getBlockTypeIdAt(x, y, z) != 0)
+      if (loc.getWorld().getBlockAt(x, y, z).getType() != Material.AIR)
       {
         return false;
       }
@@ -386,7 +385,7 @@ public class CreatureShape
   /**
    * Return the Block with the specified index comprising the creature shape,
    * relative to the location of the trigger block.
-   * 
+   *
    * @param loc the Location of the trigger block.
    * @param index the 0-based index of the block in the shape; 0 is first one
    *          added.
@@ -457,10 +456,10 @@ public class CreatureShape
   /**
    * Return true if the specified (x,y,z) offset from the head location is a
    * body block.
-   * 
+   *
    * This method is only called from computeBorder(), which happens only while
    * the shape is being loaded.
-   * 
+   *
    * @return true if the specified (x,y,z) offset from the head location is a
    *         body block.
    */
@@ -486,17 +485,17 @@ public class CreatureShape
   // --------------------------------------------------------------------------
   /**
    * Dump internal state to the specified Logger for debugging.
-   * 
+   *
    * @param logger the Logger.
    */
   protected void dump(Logger logger)
   {
-    logger.info("Trigger: " + Material.getMaterial(_triggerMaterialId).name());
+    logger.info("Trigger: " + _triggerMaterial.name());
     logger.info("Ground offset: " + _groundOffset);
     logger.info("Blocks:");
-    for (int i = 0; i < _materialIds.size(); ++i)
+    for (int i = 0; i < _materials.size(); ++i)
     {
-      String material = Material.getMaterial(_materialIds.get(i)).name();
+      String material = _materials.get(i).name();
       String offset = _offsets.get(i).toString();
       logger.info(i + ": " + material + " at " + offset);
     }
@@ -513,10 +512,10 @@ public class CreatureShape
   protected String                    _name;
 
   /**
-   * The material of the placed, named block that triggers a search for a
+   * The Material of the placed, named block that triggers a search for a
    * creature shape.
    */
-  protected int                       _triggerMaterialId;
+  protected Material                  _triggerMaterial;
 
   /**
    * True if building this shape will summon a doppelganger.
@@ -529,9 +528,9 @@ public class CreatureShape
   protected int                       _groundOffset;
 
   /**
-   * Expected Material ID at corresponding offset from trigger block.
+   * Expected Material at corresponding offset from trigger block.
    */
-  protected ArrayList<Integer>        _materialIds = new ArrayList<Integer>();
+  protected ArrayList<Material>       _materials = new ArrayList<Material>();
 
   /**
    * Offset relative to trigger block to look for corresponding _materials
