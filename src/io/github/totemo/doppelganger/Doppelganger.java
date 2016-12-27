@@ -67,7 +67,7 @@ public class Doppelganger extends JavaPlugin implements Listener {
 
     // ------------------------------------------------------------------------
     /**
-     * Event handler for placing blocks.message
+     * Event handler for placing blocks.
      *
      * Checks that a named item is stacked on a configured shape made of blocks
      * of the requisite material.
@@ -87,8 +87,7 @@ public class Doppelganger extends JavaPlugin implements Listener {
             String doppelgangerName = meta.getDisplayName();
             Matcher nameMatcher = _namePattern.matcher(doppelgangerName);
             if (_configuration.warnOnInvalidName() && !_configuration.isArbitraryNameAllowed() && !nameMatcher.matches()) {
-                event.getPlayer().sendMessage(
-                                              ChatColor.DARK_RED + "\"" + doppelgangerName + "\" is not a valid player name.");
+                event.getPlayer().sendMessage(ChatColor.DARK_RED + "\"" + doppelgangerName + "\" is not a valid player name.");
             } else {
                 World world = event.getPlayer().getWorld();
                 Location loc = event.getBlock().getLocation();
@@ -104,17 +103,25 @@ public class Doppelganger extends JavaPlugin implements Listener {
                         if (tryShape.isComplete(loc, placedItem.getType())) {
                             if (tryShape.hasBorder(loc)) {
                                 shape = tryShape;
+                                break;
                             } else {
                                 event.getPlayer().sendMessage(ChatColor.YELLOW + "You need a one block gap horizontally around the shape.");
+                                return;
                             }
-                            break;
                         }
                     } // for
 
                     if (shape == null) {
                         event.getPlayer().sendMessage(ChatColor.YELLOW + "That's not how you summon " + doppelgangerName + ".");
                     } else {
-                        doDoppelganger(doppelgangerName, _creatureFactory.getPlayerCreature(doppelgangerName), shape, event);
+                        // Use the canonical player name from the configuration.
+                        // Letter case may differ from that of the pumpkin.
+                        String creatureTypeName = _creatureFactory.getPlayerCreature(doppelgangerName);
+                        CreatureType creatureType = _creatureFactory.getCreatureType(creatureTypeName);
+                        if (creatureType.getDefaultName() != null) {
+                            doppelgangerName = creatureType.getDefaultName();
+                        }
+                        doDoppelganger(doppelgangerName, creatureTypeName, shape, event);
                     }
                 } else {
                     // Generic case where the doppelganger name doesn't matter.
@@ -127,9 +134,7 @@ public class Doppelganger extends JavaPlugin implements Listener {
                             if (_creatureFactory.isValidCreatureType(creatureType)) {
                                 doDoppelganger(doppelgangerName, creatureType, shape, event);
                             } else {
-                                getLogger().warning(
-                                                    String.format(
-                                                                  Locale.US,
+                                getLogger().warning(String.format(Locale.US,
                                                                   "Player %s tried to spawn a doppelganger named %s at (%g,%g,%g) in %s of invalid type %s by building a %s.",
                                                                   event.getPlayer().getName(), doppelgangerName, loc.getX(), loc.getY(), loc.getZ(),
                                                                   world.getName(), creatureType, shape.getName()));
@@ -210,8 +215,7 @@ public class Doppelganger extends JavaPlugin implements Listener {
 
         // If a unity drop chance was specified, it's probably a Doppelganger.
         // Also require a custom name, since 'special' mobs that pick up items
-        // will always drop them too.
-        // Log the drops for verification purposes.
+        // will always drop them too. Log the drops for verification purposes.
         if (forcedDrops && event.getEntity().getCustomName() != null) {
             Location loc = event.getEntity().getLocation();
             StringBuilder drops = new StringBuilder();
@@ -259,8 +263,7 @@ public class Doppelganger extends JavaPlugin implements Listener {
         Location loc = event.getBlock().getLocation();
         ItemStack placedItem = event.getItemInHand();
 
-        getLogger().info(
-                         String.format(Locale.US,
+        getLogger().info(String.format(Locale.US,
                                        "Player %s spawned a %s named %s at (%g,%g,%g) in %s by building a %s.",
                                        event.getPlayer().getName(), creatureType, doppelgangerName,
                                        loc.getX(), loc.getY(), loc.getZ(), loc.getWorld().getName(), shape.getName()));
@@ -288,10 +291,9 @@ public class Doppelganger extends JavaPlugin implements Listener {
         LivingEntity doppelganger = spawnDoppelganger(creatureType, doppelgangerName, groundLocation);
         if (doppelganger == null) {
             // If the creature type is invalid, it is a configuration error. The
-            // shape
-            // items are already lost. Since Configuration.isValidCreatureType()
-            // was
-            // called prior to entering doDoppelganger(), this shouldn't happen.
+            // shape items are already lost. Since
+            // Configuration.isValidCreatureType() was called prior to entering
+            // doDoppelganger(), this shouldn't happen.
             getLogger().severe("Could not spawn " + creatureType);
         } else if (doppelganger instanceof Creature) {
             // If we can, make the doppelganger the players *problem*.

@@ -97,9 +97,8 @@ public class CreatureFactory {
                     ConfigurationSection player = playersSection.getConfigurationSection(playerName);
 
                     // If a specific creature type to spawn is not specified, it
-                    // defaults
-                    // to a type with the same name as the player (if that
-                    // exists).
+                    // defaults to a type with the same name as the player (if
+                    // that exists).
                     String spawn = player.getString("spawn", playerName);
                     if (!isValidCreatureType(spawn)) {
                         logger.warning("Can't define player " + playerName +
@@ -122,8 +121,8 @@ public class CreatureFactory {
                                 logger.warning("Player " + playerName +
                                                " can only be spawned by command because no shapes have been listed.");
                             }
-                            _playerShapes.put(playerName, shapes);
-                            _playerCreatures.put(playerName, spawn);
+                            _playerShapes.put(playerName.toLowerCase(), shapes);
+                            _playerCreatures.put(playerName.toLowerCase(), spawn);
                         }
                     }
                 } // if defining
@@ -199,8 +198,7 @@ public class CreatureFactory {
      */
     public CreatureShape getCreatureShape(Location loc, ItemStack placedItem) {
         // Linear search probably doesn't matter. How often do you place
-        // explicitly
-        // named blocks?
+        // explicitly named blocks?
         for (CreatureShape shape : _shapes.values()) {
             if (shape.isComplete(loc, placedItem.getType())) {
                 return shape;
@@ -238,7 +236,7 @@ public class CreatureFactory {
      *         player is summoned; guaranteed non-null.
      */
     public String getPlayerCreature(String playerName) {
-        return _playerCreatures.get(playerName);
+        return _playerCreatures.get(playerName.toLowerCase());
     }
 
     // ------------------------------------------------------------------------
@@ -251,7 +249,7 @@ public class CreatureFactory {
      *         if not set.
      */
     public ArrayList<CreatureShape> getPlayerShapes(String playerName) {
-        return _playerShapes.get(playerName);
+        return _playerShapes.get(playerName.toLowerCase());
     }
 
     // ------------------------------------------------------------------------
@@ -421,13 +419,13 @@ public class CreatureFactory {
     protected HashMap<String, CreatureType> _types = new HashMap<String, CreatureType>();
 
     /**
-     * Map from player name to {@link CreatureType} name.
+     * Map from lower case player name to {@link CreatureType} name.
      */
     protected HashMap<String, String> _playerCreatures = new HashMap<String, String>();
 
     /**
-     * Map from player name to list of {@link CreatureShape} describing the
-     * shapes that can be built to summon that specific player.
+     * Map from lower case player name to list of {@link CreatureShape}s
+     * describing the shapes that can be built to summon that specific player.
      */
     protected HashMap<String, ArrayList<CreatureShape>> _playerShapes = new HashMap<String, ArrayList<CreatureShape>>();
 
