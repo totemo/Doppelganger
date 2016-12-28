@@ -1,21 +1,11 @@
 package io.github.totemo.doppelganger;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.jar.JarFile;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -37,28 +27,19 @@ public class Help {
     /**
      * Constructor.
      * 
+     * NOTE: At one stage I did implement a work-alike to
+     * ResourceBundle.getBundle() that would work even when Bukkit /reload
+     * breaks everything. However, it relied on the plugin JAR having the same
+     * name as the plugin, which may not always be the case, and we don't
+     * usually reload plugins anyway because that usually breaks something. So
+     * I've dropped the extra code.
+     *
      * @param baseName the base name from which the name of the resource bundle
      *        will be generated.
      * @param plugin the plugin.
      */
     public Help(String baseName, JavaPlugin plugin) {
-        // Sometimes, when you recompile and reload,
-        // PluginClassLoader.getResourceAsStream() returns null for everything,
-        // and then ResourceBundle.getBundle() will throw
-        // MissingResourceException. So simulating getBundle() instead.
-        try {
-            URLClassLoader loader = (URLClassLoader) getClass().getClassLoader();
-            for (URL url : loader.getURLs()) {
-                // Probably only the Doppelgange.jar file in the URLs, but be
-                // safe.
-                URI uri = url.toURI();
-                if (uri.toString().contains(plugin.getName())) {
-                    _bundle = loadResourceBundle(new File(uri), Locale.getDefault(), baseName, plugin.getLogger());
-                }
-            }
-        } catch (Exception ex) {
-            // Handled by null check.
-        }
+        _bundle = ResourceBundle.getBundle(baseName);
         if (_bundle == null) {
             plugin.getLogger().severe("Unable to load the help resources.");
         }
@@ -146,74 +127,6 @@ public class Help {
             return list;
         }
     } // split
-
-    // ------------------------------------------------------------------------
-    /**
-     * Implement a reasonable subset of ResourceBundle.getBundle() functionality
-     * for when a Bukkit reload breaks ClassLoader.getResourceAsStream().
-     * 
-     * @param pluginJarFile the plugin's JAR file to load from.
-     * @param local the locale to use when selecting the resource bundle.
-     * @param base the base name of the language resource properties file.
-     * @param logger logs messages
-     * @return the most specific available PropertyResourceBundle for the
-     *         locale.
-     * @throws IOException on error.
-     */
-    protected ResourceBundle loadResourceBundle(File pluginJarFile, Locale locale, String base, Logger logger)
-    throws IOException {
-        String lang = (locale.getLanguage().isEmpty()) ? "" : '_' + locale.getLanguage();
-        String script = (locale.getScript().isEmpty()) ? "" : '_' + locale.getScript();
-        String country = (locale.getCountry().isEmpty()) ? "" : '_' + locale.getCountry();
-        String variant = (locale.getVariant().isEmpty()) ? "" : '_' + locale.getVariant();
-
-        // Some of these may be duplicates and that's fine.
-        ArrayList<String> paths = new ArrayList<String>();
-        paths.add(base + lang + script + country + variant);
-        paths.add(base + lang + script + country);
-        paths.add(base + lang + script);
-        paths.add(base + lang + country + variant);
-        paths.add(base + lang + country);
-        paths.add(base + lang);
-        paths.add(base);
-
-        JarFile jar = null;
-        try {
-            jar = new JarFile(pluginJarFile);
-            for (String path : paths) {
-                String propertiesFile = path + ".properties";
-                ResourceBundle bundle = loadResourceBundle(jar, propertiesFile);
-                if (bundle != null) {
-                    logger.fine("Loaded help from " + pluginJarFile.getName() + "/" + propertiesFile);
-                    return bundle;
-                }
-            }
-        } finally {
-            if (jar != null) {
-                jar.close();
-            }
-        }
-        return null;
-    } // loadResourceBundle
-
-    // ------------------------------------------------------------------------
-    /**
-     * Attempt to load the specified resource from the JAR file.
-     * 
-     * @param jar the open JAR file.
-     * @param path the path to the resource.
-     * @return a new PropertyResourceBundle if successful, or null if the path
-     *         did not match a resource.
-     */
-    protected ResourceBundle loadResourceBundle(JarFile jar, String path)
-    throws IOException {
-        ZipEntry entry = jar.getEntry(path);
-        if (entry != null) {
-            return new PropertyResourceBundle(jar.getInputStream(entry));
-        } else {
-            return null;
-        }
-    }
 
     // ------------------------------------------------------------------------
     /**
