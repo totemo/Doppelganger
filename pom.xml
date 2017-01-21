@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.totemo</groupId>
 	<artifactId>Doppelganger</artifactId>
-	<version>0.11.0</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 	<name>Doppelganger</name>
 	<description>Provides custom, summonable mobs that are reminiscent of the built-in golem types.</description>
@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.9-R0.1-SNAPSHOT</version>
+			<version>1.11-R0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<repositories>

@@ -8,8 +8,6 @@ import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.PigZombie;
-import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.entity.Zombie;
@@ -24,21 +22,6 @@ import org.bukkit.entity.Zombie;
  * rather than instantiating a unique class.
  */
 public enum PredefinedCreature implements IPredefinedCreature {
-    WitherSkeleton(new IPredefinedCreature() {
-        @Override
-        public boolean isInstance(LivingEntity living) {
-            return living instanceof Skeleton &&
-                   ((Skeleton) living).getSkeletonType() == SkeletonType.WITHER;
-        }
-
-        @Override
-        public LivingEntity spawn(Location loc) {
-            Skeleton skeleton = loc.getWorld().spawn(loc, Skeleton.class);
-            skeleton.setSkeletonType(SkeletonType.WITHER);
-            return skeleton;
-        }
-    }),
-
     SaddledPig(new IPredefinedCreature() {
         @Override
         public boolean isInstance(LivingEntity living) {
