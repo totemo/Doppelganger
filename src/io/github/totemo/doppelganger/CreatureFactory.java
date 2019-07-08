@@ -392,8 +392,8 @@ public class CreatureFactory {
      */
     protected static void setPlayerHead(LivingEntity doppelganger, String name) {
         ItemStack helmet = doppelganger.getEquipment().getHelmet();
-        if (helmet == null || helmet.getType() != Material.SKULL_ITEM) {
-            helmet = new ItemStack(Material.SKULL_ITEM, 1);
+        if (helmet == null || helmet.getType() != Material.PLAYER_HEAD) {
+            helmet = new ItemStack(Material.PLAYER_HEAD, 1);
         }
 
         SkullMeta meta = (SkullMeta) helmet.getItemMeta();

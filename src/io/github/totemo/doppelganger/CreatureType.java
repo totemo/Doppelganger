@@ -566,7 +566,7 @@ public class CreatureType {
             }
 
             // Load additional customisation specific to books.
-            if (material == Material.BOOK_AND_QUILL || material == Material.WRITTEN_BOOK) {
+            if (material == Material.WRITABLE_BOOK || material == Material.WRITTEN_BOOK) {
                 BookMeta bookMeta = (BookMeta) meta;
                 bookMeta.setTitle(translate(section.getString("title", "")));
                 bookMeta.setAuthor(translate(section.getString("author", "")));
