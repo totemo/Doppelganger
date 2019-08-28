@@ -324,7 +324,8 @@ public class CreatureShape {
             int x = loc.getBlockX() + offset.getBlockX();
             int y = loc.getBlockY() + offset.getBlockY();
             int z = loc.getBlockZ() + offset.getBlockZ();
-            if (loc.getWorld().getBlockAt(x, y, z).getType() != Material.AIR) {
+            Material blockType = loc.getWorld().getBlockAt(x, y, z).getType();
+            if (blockType != Material.AIR && blockType != Material.CAVE_AIR) {
                 return false;
             }
         }
@@ -383,11 +384,9 @@ public class CreatureShape {
         ++maxZ;
 
         // Iterate over all offset coordinates in the bounded volume adding an
-        // entry
-        // to _border if the corresponding offset is not in _offsets. Iteration
-        // proceeds from the ground up on the basis that ground obstacles offer
-        // the
-        // earliest failure exit at creature spawn time.
+        // entry to _border if the corresponding offset is not in _offsets.
+        // Iteration proceeds from the ground up on the basis that ground
+        // obstacles offer the earliest failure exit at creature spawn time.
         for (int y = minY; y <= maxY; ++y) {
             for (int x = minX; x <= maxX; ++x) {
                 for (int z = minZ; z <= maxZ; ++z) {
