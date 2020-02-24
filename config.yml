@@ -1,4 +1,6 @@
 allow_arbitrary_names: false
+warn_on_invalid_name: false
+fix_drop_chance_bug: false
 
 shapes:
 

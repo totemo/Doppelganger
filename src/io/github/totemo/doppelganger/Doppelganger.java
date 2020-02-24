@@ -168,13 +168,14 @@ public class Doppelganger extends JavaPlugin implements Listener {
     public void onEntityDeath(EntityDeathEvent event) {
         final float NEAR_UNITY = 0.999f;
         boolean forcedDrops = false;
+        boolean fixDropChanceBug = getConfiguration().fixDropChanceBug();
         if (event.getEntity() instanceof Creature) {
             EntityEquipment equipment = event.getEntity().getEquipment();
             List<ItemStack> drops = event.getDrops();
             if (equipment.getHelmetDropChance() > NEAR_UNITY) {
                 forcedDrops = true;
                 ItemStack helmet = equipment.getHelmet();
-                if (helmet != null && !drops.contains(helmet)) {
+                if (fixDropChanceBug && helmet != null && !drops.contains(helmet)) {
                     drops.add(helmet);
                     equipment.setHelmet(null);
                 }
@@ -182,7 +183,7 @@ public class Doppelganger extends JavaPlugin implements Listener {
             if (equipment.getChestplateDropChance() > NEAR_UNITY) {
                 forcedDrops = true;
                 ItemStack chestplate = equipment.getChestplate();
-                if (chestplate != null && !drops.contains(chestplate)) {
+                if (fixDropChanceBug && chestplate != null && !drops.contains(chestplate)) {
                     drops.add(chestplate);
                     equipment.setChestplate(null);
                 }
@@ -190,7 +191,7 @@ public class Doppelganger extends JavaPlugin implements Listener {
             if (equipment.getLeggingsDropChance() > NEAR_UNITY) {
                 forcedDrops = true;
                 ItemStack leggings = equipment.getLeggings();
-                if (leggings != null && !drops.contains(leggings)) {
+                if (fixDropChanceBug && leggings != null && !drops.contains(leggings)) {
                     drops.add(leggings);
                     equipment.setLeggings(null);
                 }
@@ -198,15 +199,15 @@ public class Doppelganger extends JavaPlugin implements Listener {
             if (equipment.getBootsDropChance() > NEAR_UNITY) {
                 forcedDrops = true;
                 ItemStack boots = equipment.getBoots();
-                if (boots != null && !drops.contains(boots)) {
+                if (fixDropChanceBug && boots != null && !drops.contains(boots)) {
                     drops.add(boots);
                     equipment.setBoots(null);
                 }
             }
-            if (equipment.getItemInHandDropChance() > NEAR_UNITY) {
+            if (equipment.getItemInMainHandDropChance() > NEAR_UNITY) {
                 forcedDrops = true;
                 ItemStack itemInHand = equipment.getItemInMainHand();
-                if (itemInHand != null && !drops.contains(itemInHand)) {
+                if (fixDropChanceBug && itemInHand != null && !drops.contains(itemInHand)) {
                     drops.add(itemInHand);
                     equipment.setItemInMainHand(null);
                 }
